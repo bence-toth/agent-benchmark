@@ -2,7 +2,7 @@
 
 A CLI tool that runs the same coding task across multiple AI assistant config variants in parallel, then produces a side-by-side comparison of cost, speed, token usage, and diff output.
 
-Use it to answer: *does a better CLAUDE.md actually make Claude Code faster and cheaper?*
+Use it to answer: _does a better CLAUDE.md actually make Claude Code faster and cheaper?_
 
 ## How it works
 
@@ -54,10 +54,10 @@ Scaffolds a benchmark directory from a target repo.
 agent-bench init /path/to/repo [--variants <n>] [--name <name>]
 ```
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--variants <n>` | `2` | Number of variants to create (minimum 2) |
-| `--name <name>` | `agent-benchmark` | Name of the benchmark directory to create |
+| Flag             | Default           | Description                               |
+| ---------------- | ----------------- | ----------------------------------------- |
+| `--variants <n>` | `2`               | Number of variants to create (minimum 2)  |
+| `--name <name>`  | `agent-benchmark` | Name of the benchmark directory to create |
 
 What it does:
 
@@ -77,12 +77,12 @@ Runs the benchmark defined in a YAML config file.
 agent-bench run benchmark.yaml [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
 ```
 
-| Flag | Description |
-|------|-------------|
-| `--dry-run` | Validate config and print what would happen, without running Claude |
-| `--yes` | Skip the confirmation prompt before running |
+| Flag                | Description                                                             |
+| ------------------- | ----------------------------------------------------------------------- |
+| `--dry-run`         | Validate config and print what would happen, without running Claude     |
+| `--yes`             | Skip the confirmation prompt before running                             |
 | `--concurrency <n>` | Max number of parallel Claude processes (default: all variants at once) |
-| `--no-cleanup` | Skip the prompt to remove worktrees after the run |
+| `--no-cleanup`      | Skip the prompt to remove worktrees after the run                       |
 
 **Security note:** This command runs Claude with `--dangerously-skip-permissions`, giving it full filesystem and shell access with no confirmation prompts. You will be asked to confirm before any processes are spawned (bypass with `--yes`).
 
@@ -101,7 +101,7 @@ A `benchmark.yaml` file drives each run:
 
 ```yaml
 # The prompt given to Claude in every variant.
-prompt: "Refactor the auth middleware to use async/await"
+prompt: 'Refactor the auth middleware to use async/await'
 
 # Model to use (optional, defaults to opusplan).
 model: opusplan
@@ -115,22 +115,22 @@ repo: /path/to/your-project
 # Each variant gets its own worktree and config overlay.
 variants:
   baseline:
-    label: "A -- No changes"
+    label: 'A -- No changes'
     # No config_files: uses the repo's existing config as-is.
 
   structured_claude:
-    label: "B -- Structured CLAUDE.md"
+    label: 'B -- Structured CLAUDE.md'
     config_files:
       CLAUDE.md: ./variants/variant_b/CLAUDE.md
 
   with_agents:
-    label: "C -- CLAUDE.md + AGENTS.md"
+    label: 'C -- CLAUDE.md + AGENTS.md'
     config_files:
       CLAUDE.md: ./variants/variant_c/CLAUDE.md
       AGENTS.md: ./variants/variant_c/AGENTS.md
 
   minimal_readme:
-    label: "D -- Lean README context"
+    label: 'D -- Lean README context'
     config_files:
       CLAUDE.md: ./variants/variant_d/CLAUDE.md
       README.md: ./variants/variant_d/README.md
@@ -138,20 +138,20 @@ variants:
 
 ### Config fields
 
-| Field | Required | Default | Description |
-|-------|----------|---------|-------------|
-| `prompt` | yes | -- | The task prompt sent to Claude in every variant |
-| `model` | no | `opusplan` | Claude model to use |
-| `max_budget_usd` | no | `1.00` | Per-variant spend cap in USD |
-| `repo` | no | `cwd` | Absolute path to the target git repository |
-| `variants` | yes | -- | Map of variant keys to variant definitions |
+| Field            | Required | Default    | Description                                     |
+| ---------------- | -------- | ---------- | ----------------------------------------------- |
+| `prompt`         | yes      | --         | The task prompt sent to Claude in every variant |
+| `model`          | no       | `opusplan` | Claude model to use                             |
+| `max_budget_usd` | no       | `1.00`     | Per-variant spend cap in USD                    |
+| `repo`           | no       | `cwd`      | Absolute path to the target git repository      |
+| `variants`       | yes      | --         | Map of variant keys to variant definitions      |
 
 ### Variant definition
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `label` | no | Human-readable name shown in the report (defaults to variant key) |
-| `config_files` | no | Map of `<repo-relative dest>: <source path>` file overlays |
+| Field          | Required | Description                                                       |
+| -------------- | -------- | ----------------------------------------------------------------- |
+| `label`        | no       | Human-readable name shown in the report (defaults to variant key) |
+| `config_files` | no       | Map of `<repo-relative dest>: <source path>` file overlays        |
 
 `config_files` source paths are resolved relative to the directory containing `benchmark.yaml`. Destination paths are repo-relative (e.g. `CLAUDE.md`, `.github/copilot-instructions.md`).
 
@@ -162,6 +162,7 @@ A variant with no `config_files` entry uses the repo's existing files as-is.
 `init` scans for these files and copies whichever exist:
 
 **AI assistant config:**
+
 - `CLAUDE.md`
 - `.claude/CLAUDE.md`
 - `AGENTS.md`
@@ -170,6 +171,7 @@ A variant with no `config_files` entry uses the repo's existing files as-is.
 - `.github/copilot-instructions.md`
 
 **Repo documentation (optional):**
+
 - `README.md`
 - `CONTRIBUTING.md`
 
@@ -192,12 +194,12 @@ Input tokens include cache creation and cache read tokens.
 
 Results are also written to `.agent-bench-results/<timestamp>/`:
 
-| File | Contents |
-|------|----------|
-| `results.json` | Structured metrics for all variants |
-| `results.md` | The table above in Markdown |
-| `<variant>/events.jsonl` | Raw Claude stream-json events |
-| `<variant>/diff.patch` | Full unified diff relative to base commit |
+| File                     | Contents                                  |
+| ------------------------ | ----------------------------------------- |
+| `results.json`           | Structured metrics for all variants       |
+| `results.md`             | The table above in Markdown               |
+| `<variant>/events.jsonl` | Raw Claude stream-json events             |
+| `<variant>/diff.patch`   | Full unified diff relative to base commit |
 
 ## Reproducibility
 

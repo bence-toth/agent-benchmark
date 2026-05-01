@@ -37,7 +37,7 @@ const sampleReport = {
         durationMs: 30000,
         inputTokens: 1000,
         outputTokens: 200,
-        totalCostUsd: 0.30,
+        totalCostUsd: 0.3,
         numTurns: 2,
         toolCalls: { Bash: 2, Edit: 1 },
         cacheCreationTokens: 0,
