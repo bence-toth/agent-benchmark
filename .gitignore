@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+.env
+.env.local
+*.log
+/test/fixtures/agent-bench-*/
+/.agent-bench-worktrees/
+/.agent-bench-results/

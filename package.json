@@ -1,0 +1,42 @@
+{
+  "name": "agent-bench",
+  "version": "0.1.0",
+  "description": "Run the same Claude Code task across multiple config variants and compare results",
+  "type": "module",
+  "bin": {
+    "agent-bench": "./bin/cli.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "test": "node --test 'test/**/*.test.js'",
+    "test:unit": "node --test 'test/unit/**/*.test.js'",
+    "test:integration": "node --test 'test/integration/**/*.test.js'",
+    "lint": "eslint lib/ bin/ test/",
+    "format": "prettier --write lib/ bin/ test/",
+    "format:check": "prettier --check lib/ bin/ test/",
+    "prepublishOnly": "npm run test && npm run lint && npm run format:check"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "claude",
+    "benchmark",
+    "ai",
+    "coding-agent",
+    "claude-code"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0"
+  }
+}

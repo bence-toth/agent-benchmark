@@ -1,0 +1,8 @@
+test/
+.github/
+.eslintrc.json
+.prettierrc.json
+*.test.js
+node_modules/
+PLAN.md
+CONTRIBUTING.md
