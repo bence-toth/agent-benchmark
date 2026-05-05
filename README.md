@@ -95,6 +95,86 @@ agent-bench results              # list all
 agent-bench results <timestamp>  # re-print a specific report
 ```
 
+### `agent-bench review <benchmark.yaml>`
+
+Score the code quality of each variant's changeset along configurable axes (0-100) using AI-driven review sessions. Produces per-variant scores and cross-variant aggregate statistics.
+
+```
+agent-bench review benchmark.yaml [<timestamp>] [--dry-run] [--yes] [--concurrency <n>]
+```
+
+| Argument / Flag     | Description                                                                    |
+| ------------------- | ------------------------------------------------------------------------------ |
+| `<benchmark.yaml>`  | Path to the benchmark config (provides repo, variant definitions, review axes) |
+| `<timestamp>`       | Which result set to review (default: most recent in `.agent-bench-results/`)   |
+| `--dry-run`         | Print what would happen without spawning Claude                                |
+| `--yes`             | Skip confirmation prompt                                                       |
+| `--concurrency <n>` | Max parallel review sessions (default: all variants)                           |
+
+**Security note:** Like `run`, this command spawns Claude with `--dangerously-skip-permissions`. You will be asked to confirm before sessions are spawned (bypass with `--yes`).
+
+Each review session:
+
+1. Gets the full repository checked out at the variant's branch.
+2. Receives the original task prompt and is asked to score the change on each configured axis.
+3. Uses `git diff` to see the exact changes and inspects related files for context.
+4. Responds with a JSON object containing a score (0-100 or null) and a one-sentence rationale per axis.
+
+Results are written to `.agent-bench-results/<timestamp>/review.json` and `review.md`.
+
+## Review config
+
+The optional `review` key in `benchmark.yaml` controls the review command:
+
+```yaml
+review:
+  # Which axes to score. Each entry can be a string (built-in description)
+  # or an object with name and optional custom description.
+  axes:
+    - focused
+    - clear
+    - conventional
+    - robust
+    - concise
+    - tested
+    - secure
+    # Override the description of a built-in axis:
+    - name: secure
+      description: 'Security best practices followed, input validation present'
+    # Custom axis:
+    - name: domain-correct
+      description: 'The implementation is correct with respect to the business domain'
+
+  # Model for review sessions (defaults to the global model).
+  model: opus
+
+  # Max budget per review session in USD (default: 0.50).
+  max_budget_usd: 0.50
+```
+
+If `review` is omitted, `agent-bench review` uses all 14 default axes, the global model, and a $0.50 budget per session.
+
+### Default scoring axes
+
+| Axis           | What it measures                                                    |
+| -------------- | ------------------------------------------------------------------- |
+| `accessible`   | a11y was adequately considered                                      |
+| `clear`        | Easy to understand what was changed                                 |
+| `concise`      | Minimal but still effective                                         |
+| `conventional` | Follows conventions of the repo                                     |
+| `documented`   | Changes to public APIs or complex logic are documented where needed |
+| `focused`      | Doesn't do stuff outside of the requested changes                   |
+| `idiomatic`    | Follows language/framework idioms                                   |
+| `localized`    | i18n was considered                                                 |
+| `modular`      | Clear separation of concerns                                        |
+| `nonbreaking`  | Doesn't break existing contracts or APIs                            |
+| `performant`   | Performance was adequately considered                               |
+| `robust`       | Handles edge cases                                                  |
+| `secure`       | Security was adequately considered                                  |
+| `tested`       | Meaningful change in test coverage, broken tests are patched        |
+
+Duplicate axes are deduplicated (first occurrence wins). Axes not in the built-in list are treated as custom axes using their description as-is.
+
 ## Benchmark config
 
 A `benchmark.yaml` file drives each run:
@@ -177,6 +257,74 @@ A variant with no `config_files` entry uses the repo's existing files as-is.
 
 - `README.md`
 - `CONTRIBUTING.md`
+
+## Review output
+
+After a review run, two tables are printed:
+
+**Per-variant scores** (one column per axis, `null` means not applicable):
+
+```
+Review scores for run 2026-05-01T12-00-00Z
+
+Variant          | focused | clear | conventional | robust | ...
+-----------------+---------+-------+--------------+--------+----
+A -- No changes  | 85      | 90    | 75           | 60     | ...
+B -- Structured  | 92      | 88    | 80           | 70     | ...
+```
+
+**Aggregate statistics per variant** (null values excluded):
+
+```
+Aggregate scores per variant (null values excluded)
+
+Variant          | Min | Max | Avg  | Median
+-----------------+-----+-----+------+-------
+A -- No changes  | 60  | 90  | 77.5 | 80.0
+B -- Structured  | 45  | 95  | 80.0 | 82.5
+```
+
+Results are written to `.agent-bench-results/<timestamp>/`:
+
+| File          | Contents                           |
+| ------------- | ---------------------------------- |
+| `review.json` | Structured scores for all variants |
+| `review.md`   | The tables above in Markdown       |
+
+## Manual review workflows
+
+### Human review
+
+After a benchmark run, inspect the diffs manually:
+
+```bash
+# View the diff for a specific variant
+git diff <base-commit>..<agent-bench/variant-key>
+
+# Or read the saved patch files
+cat .agent-bench-results/<timestamp>/<variant>/diff.patch
+```
+
+Score each variant on the axes that matter to you and record the scores alongside `review.json` for comparison.
+
+### Copilot review
+
+A separate workflow (`agent-bench copilot-review`) automates Copilot-based code review:
+
+1. Takes a result set timestamp.
+2. Reuses or recreates the variant worktrees (keep them with `--no-cleanup` on the original run).
+3. Pushes each variant branch to a remote.
+4. Creates a PR for each variant against the base branch.
+5. Requests Copilot review via `gh pr review --request @copilot`.
+6. Prints the PR links so you can visit them and read Copilot's feedback.
+
+This workflow is not yet implemented as a built-in command. You can replicate it manually with:
+
+```bash
+git push origin agent-bench/<variant-key>
+gh pr create --head agent-bench/<variant-key> --base main --title "Benchmark variant: <label>"
+gh pr review <pr-number> --request @copilot
+```
 
 ## Report output
 
