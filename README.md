@@ -91,7 +91,7 @@ agent-bench run benchmark.yaml [--dry-run] [--yes] [--concurrency <n>] [--no-cle
 List past benchmark result sets stored in `.agent-bench-results/`.
 
 ```
-agent-bench results            # list all
+agent-bench results              # list all
 agent-bench results <timestamp>  # re-print a specific report
 ```
 
@@ -140,19 +140,19 @@ variants:
 
 ### Config fields
 
-| Field            | Required | Default    | Description                                                    |
-| ---------------- | -------- | ---------- | -------------------------------------------------------------- |
-| `prompt`         | yes      | --         | The task prompt sent to Claude in every variant                |
-| `model`          | no       | `opusplan` | Global default Claude model (can be overridden per-variant)    |
-| `max_budget_usd` | no       | `1.00`     | Per-variant spend cap in USD                                   |
-| `repo`           | no       | `cwd`      | Absolute path to the target git repository                     |
-| `variants`       | yes      | --         | Map of variant keys to variant definitions                     |
+| Field            | Required | Default    | Description                                                 |
+| ---------------- | -------- | ---------- | ----------------------------------------------------------- |
+| `prompt`         | yes      | --         | The task prompt sent to Claude in every variant             |
+| `model`          | no       | `opusplan` | Global default Claude model (can be overridden per-variant) |
+| `max_budget_usd` | no       | `1.00`     | Per-variant spend cap in USD                                |
+| `repo`           | no       | `cwd`      | Absolute path to the target git repository                  |
+| `variants`       | yes      | --         | Map of variant keys to variant definitions                  |
 
 ### Variant definition
 
-| Field          | Required | Description                                                                    |
-| -------------- | -------- | ------------------------------------------------------------------------------ |
-| `label`        | no       | Human-readable name shown in the report (defaults to variant key)              |
+| Field          | Required | Description                                                                   |
+| -------------- | -------- | ----------------------------------------------------------------------------- |
+| `label`        | no       | Human-readable name shown in the report (defaults to variant key)             |
 | `model`        | no       | Claude model to use for this variant (inherits global `model` if unspecified) |
 | `config_files` | no       | Map of `<repo-relative dest>: <source path>` file overlays                    |
 
