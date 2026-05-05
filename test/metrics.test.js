@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseMetrics, parseStreamLine, createCollector } from '../../lib/metrics.js'
+import { parseMetrics, parseStreamLine, createCollector } from '../lib/metrics.js'
 
 const makeResultEvent = (overrides = {}) => ({
   type: 'result',

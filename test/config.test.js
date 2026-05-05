@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import fs from 'fs/promises'
 import path from 'path'
 import os from 'os'
-import { loadConfig } from '../../lib/config.js'
+import { loadConfig } from '../lib/config.js'
 
 let tmpDir
 

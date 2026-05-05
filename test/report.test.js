@@ -21,7 +21,7 @@ after(async () => {
 
 // Dynamic import so process.cwd override is in effect
 async function importReport() {
-  const { writeResultFiles, listResults, showResult } = await import('../../lib/report.js')
+  const { writeResultFiles, listResults, showResult } = await import('../lib/report.js')
   return { writeResultFiles, listResults, showResult }
 }
 
@@ -88,7 +88,7 @@ describe('listResults', () => {
     const saved = process.cwd
     process.cwd = () => emptyDir
     try {
-      const { listResults } = await import('../../lib/report.js?empty')
+      const { listResults } = await import('../lib/report.js?empty')
       const lines = []
       const orig = console.log
       console.log = (...a) => lines.push(a.join(' '))

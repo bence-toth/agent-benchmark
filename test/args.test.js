@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseInitArgs, parseRunArgs } from '../../lib/args.js'
+import { parseInitArgs, parseRunArgs } from '../lib/args.js'
 
 describe('parseInitArgs', () => {
   it('parses repo path', () => {

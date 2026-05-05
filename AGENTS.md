@@ -4,7 +4,7 @@
 
 `agent-bench` is a Node.js CLI tool (ESM, no build step) that runs a coding task across multiple git worktrees -- each with different AI assistant config files -- and produces a comparison report. It is published to npm as `agent-bench`.
 
-The entry point is `bin/cli.js`. All logic lives in `lib/`. Tests live in `test/unit/` and `test/integration/`.
+The entry point is `bin/cli.js`. All logic lives in `lib/`. Tests live in `test/`.
 
 ## Architecture
 
@@ -32,8 +32,6 @@ lib/
 
 ```bash
 npm test                  # all tests
-npm run test:unit         # test/unit/**/*.test.js
-npm run test:integration  # test/integration/**/*.test.js
 ```
 
 - Unit tests must not spawn subprocesses or touch the real filesystem. Use `os.tmpdir()` for any temp files.

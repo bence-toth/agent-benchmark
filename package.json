@@ -10,9 +10,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test": "node --test 'test/**/*.test.js'",
-    "test:unit": "node --test 'test/unit/**/*.test.js'",
-    "test:integration": "node --test 'test/integration/**/*.test.js'",
+    "test": "node --test test/*.test.js",
     "lint": "eslint lib/ bin/ test/",
     "format": "prettier --write lib/ bin/ test/ '*.md' eslint.config.js package.json",
     "format:check": "prettier --check lib/ bin/ test/ '*.md' eslint.config.js package.json",

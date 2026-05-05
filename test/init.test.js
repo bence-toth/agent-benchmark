@@ -5,7 +5,7 @@ import path from 'path'
 import os from 'os'
 import { execFile } from 'child_process'
 import { promisify } from 'util'
-import { initBenchmark } from '../../lib/init.js'
+import { initBenchmark } from '../lib/init.js'
 
 const execFileAsync = promisify(execFile)
 

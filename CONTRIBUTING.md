@@ -14,8 +14,6 @@ No build step. The package runs directly from source as ESM.
 
 ```bash
 npm test                  # all tests
-npm run test:unit         # unit tests only
-npm run test:integration  # integration tests only (requires git)
 ```
 
 Tests use the Node.js built-in test runner (`node:test`). No external test framework.
@@ -48,9 +46,7 @@ lib/
     init.js             -- thin dispatcher for init subcommand
     run.js              -- thin dispatcher for run subcommand
     results.js          -- thin dispatcher for results subcommand
-test/
-  unit/                 -- unit tests (mock-free, no subprocess calls)
-  integration/          -- end-to-end tests with real git repos
+test/                   -- unit, integration, and end-to-end tests
 ```
 
 ## Making changes
