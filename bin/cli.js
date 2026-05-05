@@ -3,6 +3,7 @@
 import { run } from '../lib/commands/run.js'
 import { init } from '../lib/commands/init.js'
 import { results } from '../lib/commands/results.js'
+import { review } from '../lib/commands/review.js'
 
 const [, , subcommand, ...args] = process.argv
 
@@ -11,6 +12,7 @@ Usage:
   agent-bench init <repo-path> [--variants <n>] [--name <name>]
   agent-bench run <benchmark.yaml> [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
   agent-bench results [<timestamp>]
+  agent-bench review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>]
 `.trim()
 
 async function main() {
@@ -23,6 +25,9 @@ async function main() {
       break
     case 'results':
       await results(args)
+      break
+    case 'review':
+      await review(args)
       break
     default:
       console.error(help)
