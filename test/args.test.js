@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseInitArgs, parseRunArgs } from '../lib/args.js'
+import { parseInitArgs, parseRunArgs, parseReviewArgs } from '../lib/args.js'
 
 describe('parseInitArgs', () => {
   it('parses repo path', () => {
@@ -55,5 +55,37 @@ describe('parseRunArgs', () => {
 
   it('throws if --concurrency < 1', () => {
     assert.throws(() => parseRunArgs(['bench.yaml', '--concurrency', '0']), /integer >= 1/)
+  })
+})
+
+describe('parseReviewArgs', () => {
+  it('parses config file only', () => {
+    const opts = parseReviewArgs(['benchmark.yaml'])
+    assert.equal(opts.configFile, 'benchmark.yaml')
+    assert.equal(opts.timestamp, null)
+    assert.equal(opts.dryRun, false)
+    assert.equal(opts.yes, false)
+    assert.equal(opts.concurrency, null)
+  })
+
+  it('parses config file and timestamp', () => {
+    const opts = parseReviewArgs(['benchmark.yaml', '2026-05-01T12-00-00Z'])
+    assert.equal(opts.configFile, 'benchmark.yaml')
+    assert.equal(opts.timestamp, '2026-05-01T12-00-00Z')
+  })
+
+  it('parses --dry-run, --yes, --concurrency', () => {
+    const opts = parseReviewArgs(['bench.yaml', '--dry-run', '--yes', '--concurrency', '3'])
+    assert.equal(opts.dryRun, true)
+    assert.equal(opts.yes, true)
+    assert.equal(opts.concurrency, 3)
+  })
+
+  it('throws if no config file', () => {
+    assert.throws(() => parseReviewArgs([]), /Usage/)
+  })
+
+  it('throws if --concurrency < 1', () => {
+    assert.throws(() => parseReviewArgs(['bench.yaml', '--concurrency', '0']), /integer >= 1/)
   })
 })
