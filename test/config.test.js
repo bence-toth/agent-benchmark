@@ -42,6 +42,8 @@ variants:
     assert.equal(config.model, 'sonnet')
     assert.equal(config.maxBudgetUsd, 0.5)
     assert.equal(Object.keys(config.variants).length, 2)
+    assert.equal(config.variants.baseline.model, 'sonnet')
+    assert.equal(config.variants.variant_b.model, 'sonnet')
   })
 
   it('defaults model and budget', async () => {
@@ -108,6 +110,29 @@ variants:
     const config = await loadConfig(p)
     const expected = path.join(subDir, 'variants', 'baseline', 'CLAUDE.md')
     assert.equal(config.variants.baseline.configFiles['CLAUDE.md'], expected)
+  })
+
+  it('allows per-variant model overrides', async () => {
+    const p = await writeConfig(
+      'variant-models.yaml',
+      `
+prompt: "Test task"
+model: opusplan
+variants:
+  baseline:
+    label: "A -- opus"
+  variant_b:
+    label: "B -- sonnet"
+    model: sonnet
+  variant_c:
+    label: "C -- inherit default"
+`,
+    )
+    const config = await loadConfig(p)
+    assert.equal(config.model, 'opusplan')
+    assert.equal(config.variants.baseline.model, 'opusplan')
+    assert.equal(config.variants.variant_b.model, 'sonnet')
+    assert.equal(config.variants.variant_c.model, 'opusplan')
   })
 
   it('throws if config file does not exist', async () => {

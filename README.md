@@ -103,7 +103,8 @@ A `benchmark.yaml` file drives each run:
 # The prompt given to Claude in every variant.
 prompt: 'Refactor the auth middleware to use async/await'
 
-# Model to use (optional, defaults to opusplan).
+# Global model to use (optional, defaults to opusplan).
+# Can be overridden per-variant.
 model: opusplan
 
 # Maximum spend per variant in USD (safety cap).
@@ -124,7 +125,8 @@ variants:
       CLAUDE.md: ./variants/variant_b/CLAUDE.md
 
   with_agents:
-    label: 'C -- CLAUDE.md + AGENTS.md'
+    label: 'C -- CLAUDE.md + AGENTS.md (sonnet)'
+    model: sonnet
     config_files:
       CLAUDE.md: ./variants/variant_c/CLAUDE.md
       AGENTS.md: ./variants/variant_c/AGENTS.md
@@ -138,20 +140,21 @@ variants:
 
 ### Config fields
 
-| Field            | Required | Default    | Description                                     |
-| ---------------- | -------- | ---------- | ----------------------------------------------- |
-| `prompt`         | yes      | --         | The task prompt sent to Claude in every variant |
-| `model`          | no       | `opusplan` | Claude model to use                             |
-| `max_budget_usd` | no       | `1.00`     | Per-variant spend cap in USD                    |
-| `repo`           | no       | `cwd`      | Absolute path to the target git repository      |
-| `variants`       | yes      | --         | Map of variant keys to variant definitions      |
+| Field            | Required | Default    | Description                                                    |
+| ---------------- | -------- | ---------- | -------------------------------------------------------------- |
+| `prompt`         | yes      | --         | The task prompt sent to Claude in every variant                |
+| `model`          | no       | `opusplan` | Global default Claude model (can be overridden per-variant)    |
+| `max_budget_usd` | no       | `1.00`     | Per-variant spend cap in USD                                   |
+| `repo`           | no       | `cwd`      | Absolute path to the target git repository                     |
+| `variants`       | yes      | --         | Map of variant keys to variant definitions                     |
 
 ### Variant definition
 
-| Field          | Required | Description                                                       |
-| -------------- | -------- | ----------------------------------------------------------------- |
-| `label`        | no       | Human-readable name shown in the report (defaults to variant key) |
-| `config_files` | no       | Map of `<repo-relative dest>: <source path>` file overlays        |
+| Field          | Required | Description                                                                    |
+| -------------- | -------- | ------------------------------------------------------------------------------ |
+| `label`        | no       | Human-readable name shown in the report (defaults to variant key)              |
+| `model`        | no       | Claude model to use for this variant (inherits global `model` if unspecified) |
+| `config_files` | no       | Map of `<repo-relative dest>: <source path>` file overlays                    |
 
 `config_files` source paths are resolved relative to the directory containing `benchmark.yaml`. Destination paths are repo-relative (e.g. `CLAUDE.md`, `.github/copilot-instructions.md`).
 
@@ -182,12 +185,11 @@ After a run, a comparison table is printed to the terminal:
 ```
 Benchmark: "Refactor auth middleware" (2026-05-01T12:00:00Z)
 Base commit: abc1234
-Model: opusplan
 
-Variant          | Duration | Input tok | Output tok | Cost    | Tool calls       | Diff (+/-)
------------------+----------+-----------+------------+---------+------------------+----------
-A -- No changes  | 45s      | 12,340    | 3,210      | $0.42   | Bash:5 Edit:3    | +120/-80
-B -- Structured  | 32s      | 9,800     | 2,100      | $0.31   | Bash:3 Edit:2    | +95/-60
+Variant          | Model      | Duration | Input tok | Output tok | Cost    | Tool calls       | Diff (+/-)
+-----------------+------------+----------+-----------+------------+---------+------------------+----------
+A -- No changes  | opusplan   | 45s      | 12,340    | 3,210      | $0.42   | Bash:5 Edit:3    | +120/-80
+B -- Structured  | sonnet     | 32s      | 9,800     | 2,100      | $0.31   | Bash:3 Edit:2    | +95/-60
 ```
 
 Input tokens include cache creation and cache read tokens.
