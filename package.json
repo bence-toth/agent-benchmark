@@ -10,14 +10,15 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test": "node --test test/*.test.js",
-    "lint": "eslint lib/ bin/ test/",
+    "build": "npm run test && npm run lint && npm run format:check",
     "format": "prettier --write lib/ bin/ test/ '*.md' eslint.config.js package.json",
     "format:check": "prettier --check lib/ bin/ test/ '*.md' eslint.config.js package.json",
-    "build": "npm run test && npm run lint && npm run format:check",
+    "lint": "eslint lib/ bin/ test/",
     "pack": "npm pack --dry-run",
+    "prepublishOnly": "npm run build",
     "publish": "npm publish",
-    "prepublishOnly": "npm run build"
+    "test": "node --test test/*.test.js",
+    "test:coverage": "mkdir -p coverage && node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test-reporter=spec --test-reporter-destination=stdout test/*.test.js"
   },
   "files": [
     "bin/",
