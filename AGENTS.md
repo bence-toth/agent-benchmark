@@ -51,6 +51,7 @@ npm test # all tests
 - Integration tests may use real git repos created in `os.tmpdir()`. They must clean up after themselves in `after()` hooks.
 - Tests must not require a Claude API key. The runner (`lib/runner.js`) is not exercised in the test suite.
 - Always run the relevant test suite after making changes and fix failures before finishing.
+- Use `npm run test:coverage` to generate an LCOV coverage report at `coverage/lcov.info`.
 
 ## Code style
 

@@ -49,6 +49,7 @@ node bin/cli.js init /path/to/my-repo
 
 ```bash
 npm test                  # all tests
+npm run test:coverage     # all tests with LCOV coverage report (coverage/lcov.info)
 ```
 
 Tests use the Node.js built-in test runner (`node:test`). No external test framework.
@@ -70,38 +71,29 @@ Prettier is the source of truth for style. ESLint only enforces correctness rule
 ```
 bin/cli.js              – entry point, subcommand routing
 lib/
-  args.js               – CLI flag parsing for init and run
+  args.js               – CLI flag parsing for all subcommands
   config.js             – YAML loading and validation
+  copilot-reviewer.js   – GitHub Copilot review orchestration
   init.js               – agent-benchmark init implementation
   metrics.js            – stream-json event parsing
+  pricing.js            – normalized cost calculation across cache tiers
   report.js             – terminal table + result file writing
+  review-prompt.js      – builds the review prompt for AI reviewers
+  review-report.js      – review result file writing and loading
+  reviewer.js           – Claude review orchestration
   runner.js             – Claude process spawning and orchestration
   worktree.js           – git worktree lifecycle and diff stats
   commands/
-    init.js             – thin dispatcher for init subcommand
-    run.js              – thin dispatcher for run subcommand
-    results.js          – thin dispatcher for results subcommand
+    copilot-review.js         – thin dispatcher for copilot-review subcommand
+    copilot-review-cleanup.js – thin dispatcher for copilot-review-cleanup subcommand
+    init.js                   – thin dispatcher for init subcommand
+    results.js                – thin dispatcher for results subcommand
+    review.js                 – thin dispatcher for review subcommand
+    review-cleanup.js         – thin dispatcher for review-cleanup subcommand
+    run.js                    – thin dispatcher for run subcommand
+    run-cleanup.js            – thin dispatcher for run-cleanup subcommand
 test/                   – unit, integration, and end-to-end tests
 ```
-
-## Making changes
-
-### Adding a new metric
-
-1. Add extraction logic in [lib/metrics.js](lib/metrics.js) inside `parseMetrics`.
-2. Add the column to `COLUMNS` and `buildRow` in [lib/report.js](lib/report.js).
-3. Add a unit test in [test/unit/metrics.test.js](test/unit/metrics.test.js).
-
-### Adding a new CLI flag
-
-1. Add parsing in [lib/args.js](lib/args.js) in the appropriate `parse*Args` function.
-2. Pass the option through the command dispatcher in [lib/commands/](lib/commands/).
-3. Use it in the relevant module.
-4. Add a unit test in [test/unit/args.test.js](test/unit/args.test.js).
-
-### Adding a recognized config file
-
-Add the path to the `AI_CONFIG_FILES` or `DOC_FILES` array at the top of [lib/init.js](lib/init.js).
 
 ## Commit style
 
@@ -145,7 +137,7 @@ If GitHub Actions is unavailable or you need to publish manually:
 ```bash
 # Verify the package before publishing
 npm run build        # runs tests, lint, and format checks
-npm pack             # dry-run, shows what would be packed
+npm run pack         # dry-run, shows what would be packed
 
 # Publish to NPM
 npm publish
