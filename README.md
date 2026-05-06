@@ -181,7 +181,6 @@ review:
     - robust
     - concise
     - tested
-    - secure
     # Override the description of a built-in axis:
     - name: secure
       description: 'Security best practices followed, input validation present'
