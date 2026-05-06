@@ -1,73 +1,61 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseReviewOutput, computeAggregates } from '../lib/reviewer.js'
+import { parseReviewScores, computeAggregates } from '../lib/reviewer.js'
 import { buildReviewPrompt } from '../lib/review-prompt.js'
 
-// ── parseReviewOutput ────────────────────────────────────────────────────────
+// ── parseReviewScores ────────────────────────────────────────────────────────
 
-describe('parseReviewOutput', () => {
-  it('parses a well-formed JSON response', () => {
-    const text = JSON.stringify({
+describe('parseReviewScores', () => {
+  it('parses a well-formed scores object', () => {
+    const obj = {
       scores: {
         focused: { score: 85, rationale: 'Stays on task.' },
         clear: { score: 70, rationale: 'Mostly readable.' },
       },
-    })
-    const result = parseReviewOutput(text)
+    }
+    const result = parseReviewScores(obj)
     assert.equal(result.focused.score, 85)
     assert.equal(result.focused.rationale, 'Stays on task.')
     assert.equal(result.clear.score, 70)
   })
 
   it('accepts null scores', () => {
-    const text = JSON.stringify({
+    const obj = {
       scores: {
         localized: { score: null, rationale: 'Not applicable.' },
       },
-    })
-    const result = parseReviewOutput(text)
+    }
+    const result = parseReviewScores(obj)
     assert.equal(result.localized.score, null)
     assert.equal(result.localized.rationale, 'Not applicable.')
   })
 
-  it('strips markdown code fences', () => {
-    const text =
-      '```json\n' +
-      JSON.stringify({ scores: { focused: { score: 90, rationale: 'Good.' } } }) +
-      '\n```'
-    const result = parseReviewOutput(text)
-    assert.equal(result.focused.score, 90)
-  })
-
-  it('returns null for empty text', () => {
-    assert.equal(parseReviewOutput(''), null)
-    assert.equal(parseReviewOutput(null), null)
-  })
-
-  it('returns null for invalid JSON', () => {
-    assert.equal(parseReviewOutput('not json at all'), null)
+  it('returns null for invalid object', () => {
+    assert.equal(parseReviewScores(null), null)
+    assert.equal(parseReviewScores({}), null)
+    assert.equal(parseReviewScores({ scores: null }), null)
   })
 
   it('returns null when scores field is missing', () => {
-    assert.equal(parseReviewOutput(JSON.stringify({ result: 42 })), null)
+    assert.equal(parseReviewScores({ result: 42 }), null)
   })
 
   it('treats non-numeric score as null', () => {
-    const text = JSON.stringify({
+    const obj = {
       scores: { focused: { score: 'high', rationale: 'Qualitative.' } },
-    })
-    const result = parseReviewOutput(text)
+    }
+    const result = parseReviewScores(obj)
     assert.equal(result.focused.score, null)
   })
 
   it('skips malformed axis entries', () => {
-    const text = JSON.stringify({
+    const obj = {
       scores: {
         focused: { score: 80, rationale: 'Fine.' },
         badEntry: null,
       },
-    })
-    const result = parseReviewOutput(text)
+    }
+    const result = parseReviewScores(obj)
     assert.ok(result.focused)
     assert.equal(result.badEntry, undefined)
   })
@@ -157,9 +145,10 @@ describe('buildReviewPrompt', () => {
     assert.ok(prompt.includes('- clear: Easy to read.'))
   })
 
-  it('instructs Claude to respond with ONLY JSON', () => {
+  it('instructs Claude to use Write tool', () => {
     const axes = [{ name: 'focused', description: 'Stays on task.' }]
     const prompt = buildReviewPrompt('task', axes)
-    assert.ok(prompt.includes('Respond with ONLY a JSON object'))
+    assert.ok(prompt.includes('Write tool'))
+    assert.ok(prompt.includes('.review-scores.json'))
   })
 })
