@@ -54,6 +54,9 @@ npx agent-benchmark init /path/to/your-project
 
 # 4. Run it
 npx agent-benchmark run agent-benchmark/benchmark.yaml
+
+# 5. Score code quality of each variant
+npx agent-benchmark review agent-benchmark/benchmark.yaml
 ```
 
 ## Commands
@@ -210,58 +213,6 @@ agent-benchmark copilot-review-cleanup benchmark.yaml [--yes]
 
 This is useful if you used a prior copilot-review run with `--no-cleanup` to inspect the variant branches or PRs manually, then want to remove the worktrees without re-running the review.
 
-## Review config
-
-The `review` key in `benchmark.yaml` controls the review command:
-
-```yaml
-review:
-  # Which axes to score. Each entry can be a string (built-in description)
-  # or an object with name and optional custom description.
-  axes:
-    - focused
-    - clear
-    - conventional
-    - robust
-    - concise
-    - tested
-    # Override the description of a built-in axis:
-    - name: secure
-      description: 'Security best practices followed, input validation present'
-    # Custom axis:
-    - name: domain-correct
-      description: 'The implementation is correct with respect to the business domain'
-
-  # Model for review sessions (defaults to the global model).
-  model: opus
-
-  # Max budget per review session in USD (default: 0.50).
-  max_budget_usd: 0.50
-```
-
-If `review` is omitted, `agent-benchmark review` uses all 14 default axes, the global model, and a $0.50 budget per session.
-
-### Default scoring axes
-
-| Axis           | What it measures                                                    |
-| -------------- | ------------------------------------------------------------------- |
-| `accessible`   | a11y was adequately considered                                      |
-| `clear`        | Easy to understand what was changed                                 |
-| `concise`      | Minimal but still effective                                         |
-| `conventional` | Follows conventions of the repo                                     |
-| `documented`   | Changes to public APIs or complex logic are documented where needed |
-| `focused`      | Doesn't do stuff outside of the requested changes                   |
-| `idiomatic`    | Follows language/framework idioms                                   |
-| `localized`    | i18n was considered                                                 |
-| `modular`      | Clear separation of concerns                                        |
-| `nonbreaking`  | Doesn't break existing contracts or APIs                            |
-| `performant`   | Performance was adequately considered                               |
-| `robust`       | Handles edge cases                                                  |
-| `secure`       | Security was adequately considered                                  |
-| `tested`       | Meaningful change in test coverage, broken tests are patched        |
-
-Duplicate axes are deduplicated (first occurrence wins). Axes not in the built-in list are treated as custom axes using their description as-is.
-
 ## Benchmark config
 
 A `benchmark.yaml` file drives each run:
@@ -345,6 +296,58 @@ A variant with no `config_files` entry uses the repo's existing files as-is.
 - `README.md`
 - `CONTRIBUTING.md`
 
+## Review config
+
+The `review` key in `benchmark.yaml` controls the review command:
+
+```yaml
+review:
+  # Which axes to score. Each entry can be a string (built-in description)
+  # or an object with name and optional custom description.
+  axes:
+    - focused
+    - clear
+    - conventional
+    - robust
+    - concise
+    - tested
+    # Override the description of a built-in axis:
+    - name: secure
+      description: 'Security best practices followed, input validation present'
+    # Custom axis:
+    - name: domain-correct
+      description: 'The implementation is correct with respect to the business domain'
+
+  # Model for review sessions (defaults to the global model).
+  model: opus
+
+  # Max budget per review session in USD (default: 0.50).
+  max_budget_usd: 0.50
+```
+
+If `review` is omitted, `agent-benchmark review` uses all 14 default axes, the global model, and a $0.50 budget per session.
+
+### Default scoring axes
+
+| Axis           | What it measures                                                    |
+| -------------- | ------------------------------------------------------------------- |
+| `accessible`   | a11y was adequately considered                                      |
+| `clear`        | Easy to understand what was changed                                 |
+| `concise`      | Minimal but still effective                                         |
+| `conventional` | Follows conventions of the repo                                     |
+| `documented`   | Changes to public APIs or complex logic are documented where needed |
+| `focused`      | Doesn't do stuff outside of the requested changes                   |
+| `idiomatic`    | Follows language/framework idioms                                   |
+| `localized`    | i18n was considered                                                 |
+| `modular`      | Clear separation of concerns                                        |
+| `nonbreaking`  | Doesn't break existing contracts or APIs                            |
+| `performant`   | Performance was adequately considered                               |
+| `robust`       | Handles edge cases                                                  |
+| `secure`       | Security was adequately considered                                  |
+| `tested`       | Meaningful change in test coverage, broken tests are patched        |
+
+Duplicate axes are deduplicated (first occurrence wins). Axes not in the built-in list are treated as custom axes using their description as-is.
+
 ## Review output
 
 After a review run, two tables are printed:
@@ -356,8 +359,8 @@ Review scores for run 2026-05-01T12-00-00Z
 
 Variant          | focused | clear | conventional | robust | ...
 -----------------+---------+-------+--------------+--------+----
-A – No changes  | 85      | 90    | 75           | 60     | ...
-B – Structured  | 92      | 88    | 80           | 70     | ...
+A – No changes   | 85      | 90    | 75           | 60     | ...
+B – Structured   | 92      | 88    | 80           | 70     | ...
 ```
 
 **Aggregate statistics per variant** (null values excluded):
@@ -367,8 +370,8 @@ Aggregate scores per variant (null values excluded)
 
 Variant          | Min | Max | Avg  | Median
 -----------------+-----+-----+------+-------
-A –No changes  | 60  | 90  | 77.5 | 80.0
-B – Structured  | 45  | 95  | 80.0 | 82.5
+A – No changes   | 60  | 90  | 77.5 | 80.0
+B – Structured   | 45  | 95  | 80.0 | 82.5
 ```
 
 Results are written to `.agent-benchmark-results/<timestamp>/`:
@@ -408,8 +411,8 @@ Base commit: abc1234
 
 Variant          | Model      | Duration | Input tok | Output tok | Cost    | Tool calls       | Diff (+/-)
 -----------------+------------+----------+-----------+------------+---------+------------------+----------
-A – No changes  | opusplan   | 45s      | 12,340    | 3,210      | $0.42   | Bash:5 Edit:3    | +120/-80
-B – Structured  | sonnet     | 32s      | 9,800     | 2,100      | $0.31   | Bash:3 Edit:2    | +95/-60
+A – No changes   | opusplan   | 45s      | 12,340    | 3,210      | $0.42   | Bash:5 Edit:3    | +120/-80
+B – Structured   | sonnet     | 32s      | 9,800     | 2,100      | $0.31   | Bash:3 Edit:2    | +95/-60
 ```
 
 Input tokens include cache creation and cache read tokens.
