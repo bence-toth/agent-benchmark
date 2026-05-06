@@ -1,14 +1,15 @@
 # agent-bench
 
-A CLI tool that runs the same coding task across multiple AI assistant config variants in parallel, then produces a side-by-side comparison of cost, speed, token usage, and diff output.
+A CLI tool that runs the same coding task across multiple AI assistant config variants in parallel, then produces a side-by-side comparison of cost, speed, token usage, and diff output, and scores each variant on code quality axes using AI-driven review.
 
-Use it to answer: _does a better CLAUDE.md actually make Claude Code faster and cheaper?_
+Use it to answer: _does a better CLAUDE.md actually make Claude Code faster and cheaper? Does it produce better code?_
 
 ## How it works
 
 1. You scaffold a benchmark directory from a target repo (`init`).
 2. You edit the variant config files (CLAUDE.md, AGENTS.md, README.md, etc.) to test your ideas.
-3. You run the benchmark (`run`) -- each variant gets its own git worktree, Claude runs in all of them in parallel, and you get a comparison table.
+3. You run the benchmark (`run`) -- each variant gets its own git worktree, Claude runs in all of them in parallel, and you get a comparison table of metrics and diffs.
+4. You score the code quality of each variant's changes (`review`) along configurable axes (0-100) to see which configuration produces better-quality code.
 
 ## Requirements
 
@@ -105,8 +106,8 @@ Remove worktrees and branches created by a prior `run --no-cleanup`.
 agent-bench run-cleanup benchmark.yaml [--yes]
 ```
 
-| Flag   | Description             |
-| ------ | ----------------------- |
+| Flag    | Description                  |
+| ------- | ---------------------------- |
 | `--yes` | Skip the confirmation prompt |
 
 This is useful if you ran with `--no-cleanup` to inspect results, then want to clean up manually later.
@@ -148,11 +149,11 @@ Remove review worktrees created by a prior review run.
 agent-bench review-cleanup benchmark.yaml [<timestamp>] [--yes]
 ```
 
-| Argument / Flag | Description                                                                  |
-| --------------- | ---------------------------------------------------------------------------- |
-| `<benchmark.yaml>` | Path to the benchmark config (provides variant definitions)                  |
-| `<timestamp>`   | Which result set's worktrees to clean up (default: most recent in `.agent-bench-results/`) |
-| `--yes`         | Skip confirmation prompt                                                    |
+| Argument / Flag    | Description                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------ |
+| `<benchmark.yaml>` | Path to the benchmark config (provides variant definitions)                                |
+| `<timestamp>`      | Which result set's worktrees to clean up (default: most recent in `.agent-bench-results/`) |
+| `--yes`            | Skip confirmation prompt                                                                   |
 
 This is useful if you used a prior review run to inspect the variant branches manually, then want to remove the worktrees without re-running the review.
 
