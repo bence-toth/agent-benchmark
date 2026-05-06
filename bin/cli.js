@@ -7,6 +7,7 @@ import { review } from '../lib/commands/review.js'
 import { runCleanup } from '../lib/commands/run-cleanup.js'
 import { reviewCleanup } from '../lib/commands/review-cleanup.js'
 import { copilotReview } from '../lib/commands/copilot-review.js'
+import { copilotReviewCleanup } from '../lib/commands/copilot-review-cleanup.js'
 
 const [, , subcommand, ...args] = process.argv
 
@@ -19,6 +20,7 @@ Usage:
   agent-benchmark review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>]
   agent-benchmark review-cleanup <benchmark.yaml> [<timestamp>] [--yes]
   agent-benchmark copilot-review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
+  agent-benchmark copilot-review-cleanup <benchmark.yaml> [--yes]
 `.trim()
 
 async function main() {
@@ -43,6 +45,9 @@ async function main() {
       break
     case 'copilot-review':
       await copilotReview(args)
+      break
+    case 'copilot-review-cleanup':
+      await copilotReviewCleanup(args)
       break
     default:
       console.error(help)

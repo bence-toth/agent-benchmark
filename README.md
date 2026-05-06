@@ -195,6 +195,21 @@ Each review session:
 
 Results are written to `.agent-benchmark-results/<timestamp>/review.json` and `review.md`.
 
+### `agent-benchmark copilot-review-cleanup <benchmark.yaml> [--yes]`
+
+Remove Copilot review worktrees created by a prior copilot-review run.
+
+```
+agent-benchmark copilot-review-cleanup benchmark.yaml [--yes]
+```
+
+| Argument / Flag    | Description                                                 |
+| ------------------ | ----------------------------------------------------------- |
+| `<benchmark.yaml>` | Path to the benchmark config (provides variant definitions) |
+| `--yes`            | Skip confirmation prompt                                    |
+
+This is useful if you used a prior copilot-review run with `--no-cleanup` to inspect the variant branches or PRs manually, then want to remove the worktrees without re-running the review.
+
 ## Review config
 
 The `review` key in `benchmark.yaml` controls the review command:
