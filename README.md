@@ -16,6 +16,17 @@ Use it to answer: _does a better CLAUDE.md actually make Claude Code faster and 
 - [Claude Code](https://claude.ai/code) CLI installed and authenticated (`claude` on your PATH)
 - Git 2.5+ (for worktree support)
 
+## Worktree management
+
+After each benchmark run completes:
+
+- **All workspace changes are committed** to the variant branch so worktrees can be removed cleanly.
+- If a commit fails (e.g., no staged changes), the tool continues without error.
+
+After each review session:
+
+- **All local changes are discarded** before the worktree is removed. Review sessions should not create changes on disk; this safeguard catches unexpected side effects.
+
 ## Installation
 
 ```
