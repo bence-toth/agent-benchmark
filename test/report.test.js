@@ -9,7 +9,7 @@ let tmpDir
 let originalCwd
 
 before(async () => {
-  tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-bench-report-'))
+  tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-benchmark-report-'))
   originalCwd = process.cwd
   process.cwd = () => tmpDir
 })
@@ -64,7 +64,7 @@ describe('writeResultFiles', () => {
     const { writeResultFiles } = await importReport()
     await writeResultFiles(sampleReport, { baseline: '/wt/baseline', variant_b: '/wt/b' })
 
-    const dir = path.join(tmpDir, '.agent-bench-results', sampleReport.timestamp)
+    const dir = path.join(tmpDir, '.agent-benchmark-results', sampleReport.timestamp)
     const json = JSON.parse(await fs.readFile(path.join(dir, 'results.json'), 'utf8'))
     assert.equal(json.prompt, 'Fix the bug')
     assert.ok(json.variants.baseline.metrics)
@@ -83,8 +83,8 @@ describe('writeResultFiles', () => {
 
 describe('listResults', () => {
   it('prints nothing-found when results directory does not exist', async () => {
-    // Point cwd at a fresh empty dir with no .agent-bench-results inside
-    const emptyDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-bench-empty-'))
+    // Point cwd at a fresh empty dir with no .agent-benchmark-results inside
+    const emptyDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-benchmark-empty-'))
     const saved = process.cwd
     process.cwd = () => emptyDir
     try {

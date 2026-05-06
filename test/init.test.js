@@ -17,8 +17,8 @@ async function git(...args) {
 }
 
 before(async () => {
-  repoDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-bench-repo-'))
-  benchCwd = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-bench-cwd-'))
+  repoDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-benchmark-repo-'))
+  benchCwd = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-benchmark-cwd-'))
 
   await git('init')
   await git('config', 'user.email', 'test@test.com')

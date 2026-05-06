@@ -1,10 +1,10 @@
 {
-  "name": "agent-bench",
+  "name": "agent-benchmark",
   "version": "0.1.0",
   "description": "Run the same Claude Code task across multiple config variants and compare results",
   "type": "module",
   "bin": {
-    "agent-bench": "./bin/cli.js"
+    "agent-benchmark": "./bin/cli.js"
   },
   "engines": {
     "node": ">=18.0.0"

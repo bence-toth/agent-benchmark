@@ -1,10 +1,10 @@
-# Contributing to agent-bench
+# Contributing to agent-benchmark
 
 ## Development setup
 
 ```bash
-git clone https://github.com/your-org/agent-bench
-cd agent-bench
+git clone https://github.com/bence-toth/agent-benchmark
+cd agent-benchmark
 npm install
 ```
 
@@ -17,24 +17,24 @@ To test changes locally without publishing to NPM:
 ### Via npm link (preferred for rapid iteration)
 
 ```bash
-# In the agent-bench directory
+# In the agent-benchmark directory
 npm link
 
-# The agent-bench command is now available globally from your local source:
-agent-bench --help
+# The agent-benchmark command is now available globally from your local source:
+agent-benchmark --help
 
 # When done, unlink:
-npm unlink -g agent-bench
+npm unlink -g agent-benchmark
 ```
 
 ### Via npm pack (simulate the published package)
 
 ```bash
-# In the agent-bench directory
+# In the agent-benchmark directory
 npm pack
 
-# This creates agent-bench-0.1.0.tgz. Install it elsewhere:
-npm install /path/to/agent-bench-0.1.0.tgz
+# This creates agent-benchmark-0.1.0.tgz. Install it elsewhere:
+npm install /path/to/agent-benchmark-0.1.0.tgz
 ```
 
 ### Direct invocation (for CLI testing)
@@ -72,7 +72,7 @@ bin/cli.js              -- entry point, subcommand routing
 lib/
   args.js               -- CLI flag parsing for init and run
   config.js             -- YAML loading and validation
-  init.js               -- agent-bench init implementation
+  init.js               -- agent-benchmark init implementation
   metrics.js            -- stream-json event parsing
   report.js             -- terminal table + result file writing
   runner.js             -- Claude process spawning and orchestration
@@ -154,5 +154,5 @@ npm publish
 **Prerequisites:**
 
 - You must be logged in: `npm login`
-- You must have publish permissions for the `agent-bench` package on NPM
+- You must have publish permissions for the `agent-benchmark` package on NPM
 - The version in `package.json` must not already exist on NPM

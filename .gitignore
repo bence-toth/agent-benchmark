@@ -3,6 +3,6 @@ node_modules/
 .env
 .env.local
 *.log
-/test/fixtures/agent-bench-*/
-/.agent-bench-worktrees/
-/.agent-bench-results/
+/test/fixtures/agent-benchmark-*/
+/.agent-benchmark-worktrees/
+/.agent-benchmark-results/

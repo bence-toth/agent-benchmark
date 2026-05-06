@@ -8,7 +8,7 @@ import { loadConfig, DEFAULT_AXES } from '../lib/config.js'
 let tmpDir
 
 before(async () => {
-  tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-bench-test-'))
+  tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-benchmark-test-'))
 })
 
 after(async () => {

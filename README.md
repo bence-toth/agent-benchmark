@@ -1,4 +1,4 @@
-# agent-bench
+# agent-benchmark
 
 A CLI tool that runs the same coding task across multiple AI assistant config variants in parallel, then produces a side-by-side comparison of cost, speed, token usage, and diff output, and scores each variant on code quality axes using AI-driven review.
 
@@ -31,20 +31,20 @@ After each review session:
 ## Installation
 
 ```
-npm install -g agent-bench
+npm install -g agent-benchmark
 ```
 
 Or use without installing:
 
 ```
-npx agent-bench <command>
+npx agent-benchmark <command>
 ```
 
 ## Quick start
 
 ```bash
 # 1. Scaffold a benchmark from your project
-npx agent-bench init /path/to/your-project
+npx agent-benchmark init /path/to/your-project
 
 # 2. Edit the variant files
 #    variants/baseline/  -- leave as-is (or delete config_files entry to use repo directly)
@@ -53,17 +53,17 @@ npx agent-bench init /path/to/your-project
 # 3. Fill in the prompt in agent-benchmark/benchmark.yaml
 
 # 4. Run it
-npx agent-bench run agent-benchmark/benchmark.yaml
+npx agent-benchmark run agent-benchmark/benchmark.yaml
 ```
 
 ## Commands
 
-### `agent-bench init <repo-path>`
+### `agent-benchmark init <repo-path>`
 
 Scaffolds a benchmark directory from a target repo.
 
 ```
-agent-bench init /path/to/repo [--variants <n>] [--name <name>]
+agent-benchmark init /path/to/repo [--variants <n>] [--name <name>]
 ```
 
 | Flag             | Default           | Description                               |
@@ -81,12 +81,12 @@ What it does:
 
 If `agent-benchmark/` already exists, you will be prompted to use a numbered suffix, delete the existing directory, or cancel.
 
-### `agent-bench run <benchmark.yaml>`
+### `agent-benchmark run <benchmark.yaml>`
 
 Runs the benchmark defined in a YAML config file.
 
 ```
-agent-bench run benchmark.yaml [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
+agent-benchmark run benchmark.yaml [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
 ```
 
 | Flag                | Description                                                             |
@@ -98,12 +98,12 @@ agent-bench run benchmark.yaml [--dry-run] [--yes] [--concurrency <n>] [--no-cle
 
 **Security note:** This command runs Claude with `--dangerously-skip-permissions`, giving it full filesystem and shell access with no confirmation prompts. You will be asked to confirm before any processes are spawned (bypass with `--yes`).
 
-### `agent-bench run-cleanup <benchmark.yaml>`
+### `agent-benchmark run-cleanup <benchmark.yaml>`
 
 Remove worktrees and branches created by a prior `run --no-cleanup`.
 
 ```
-agent-bench run-cleanup benchmark.yaml [--yes]
+agent-benchmark run-cleanup benchmark.yaml [--yes]
 ```
 
 | Flag    | Description                  |
@@ -112,67 +112,67 @@ agent-bench run-cleanup benchmark.yaml [--yes]
 
 This is useful if you ran with `--no-cleanup` to inspect results, then want to clean up manually later.
 
-### `agent-bench results`
+### `agent-benchmark results`
 
-List past benchmark result sets stored in `.agent-bench-results/`.
+List past benchmark result sets stored in `.agent-benchmark-results/`.
 
 ```
-agent-bench results              # list all
-agent-bench results <timestamp>  # re-print a specific report
+agent-benchmark results              # list all
+agent-benchmark results <timestamp>  # re-print a specific report
 ```
 
-### `agent-bench review <benchmark.yaml>`
+### `agent-benchmark review <benchmark.yaml>`
 
 Score the code quality of each variant's changeset along configurable axes (0-100) using AI-driven review sessions. Produces per-variant scores and cross-variant aggregate statistics.
 
 ```
-agent-bench review benchmark.yaml [<timestamp>] [--dry-run] [--yes] [--concurrency <n>]
+agent-benchmark review benchmark.yaml [<timestamp>] [--dry-run] [--yes] [--concurrency <n>]
 ```
 
-| Argument / Flag     | Description                                                                    |
-| ------------------- | ------------------------------------------------------------------------------ |
-| `<benchmark.yaml>`  | Path to the benchmark config (provides repo, variant definitions, review axes) |
-| `<timestamp>`       | Which result set to review (default: most recent in `.agent-bench-results/`)   |
-| `--dry-run`         | Print what would happen without spawning Claude                                |
-| `--yes`             | Skip confirmation prompt                                                       |
-| `--concurrency <n>` | Max parallel review sessions (default: all variants)                           |
+| Argument / Flag     | Description                                                                      |
+| ------------------- | -------------------------------------------------------------------------------- |
+| `<benchmark.yaml>`  | Path to the benchmark config (provides repo, variant definitions, review axes)   |
+| `<timestamp>`       | Which result set to review (default: most recent in `.agent-benchmark-results/`) |
+| `--dry-run`         | Print what would happen without spawning Claude                                  |
+| `--yes`             | Skip confirmation prompt                                                         |
+| `--concurrency <n>` | Max parallel review sessions (default: all variants)                             |
 
 **Security note:** Like `run`, this command spawns Claude with `--dangerously-skip-permissions`. You will be asked to confirm before sessions are spawned (bypass with `--yes`).
 
 Each review session:
 
-### `agent-bench review-cleanup <benchmark.yaml> [<timestamp>]`
+### `agent-benchmark review-cleanup <benchmark.yaml> [<timestamp>]`
 
 Remove review worktrees created by a prior review run.
 
 ```
-agent-bench review-cleanup benchmark.yaml [<timestamp>] [--yes]
+agent-benchmark review-cleanup benchmark.yaml [<timestamp>] [--yes]
 ```
 
-| Argument / Flag    | Description                                                                                |
-| ------------------ | ------------------------------------------------------------------------------------------ |
-| `<benchmark.yaml>` | Path to the benchmark config (provides variant definitions)                                |
-| `<timestamp>`      | Which result set's worktrees to clean up (default: most recent in `.agent-bench-results/`) |
-| `--yes`            | Skip confirmation prompt                                                                   |
+| Argument / Flag    | Description                                                                                    |
+| ------------------ | ---------------------------------------------------------------------------------------------- |
+| `<benchmark.yaml>` | Path to the benchmark config (provides variant definitions)                                    |
+| `<timestamp>`      | Which result set's worktrees to clean up (default: most recent in `.agent-benchmark-results/`) |
+| `--yes`            | Skip confirmation prompt                                                                       |
 
 This is useful if you used a prior review run to inspect the variant branches manually, then want to remove the worktrees without re-running the review.
 
-### `agent-bench copilot-review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]`
+### `agent-benchmark copilot-review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]`
 
 Create pull requests for each benchmark variant and request Copilot code reviews.
 
 ```
-agent-bench copilot-review benchmark.yaml [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
+agent-benchmark copilot-review benchmark.yaml [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
 ```
 
-| Argument / Flag     | Description                                                                          |
-| ------------------- | ------------------------------------------------------------------------------------ |
-| `<benchmark.yaml>`  | Path to the benchmark config (provides repo, variant definitions, base branch)       |
-| `<timestamp>`       | Which result set to create PRs for (default: most recent in `.agent-bench-results/`) |
-| `--dry-run`         | Print what would happen without creating PRs                                         |
-| `--yes`             | Skip confirmation prompt                                                             |
-| `--concurrency <n>` | Max parallel PR creation (default: all variants)                                     |
-| `--no-cleanup`      | Leave worktrees after creating PRs (useful for manual inspection)                    |
+| Argument / Flag     | Description                                                                              |
+| ------------------- | ---------------------------------------------------------------------------------------- |
+| `<benchmark.yaml>`  | Path to the benchmark config (provides repo, variant definitions, base branch)           |
+| `<timestamp>`       | Which result set to create PRs for (default: most recent in `.agent-benchmark-results/`) |
+| `--dry-run`         | Print what would happen without creating PRs                                             |
+| `--yes`             | Skip confirmation prompt                                                                 |
+| `--concurrency <n>` | Max parallel PR creation (default: all variants)                                         |
+| `--no-cleanup`      | Leave worktrees after creating PRs (useful for manual inspection)                        |
 
 **Security note:** This command uses the `gh` CLI to create PRs and request reviews. You will be asked to confirm before any operations are performed (bypass with `--yes`).
 
@@ -193,7 +193,7 @@ Each review session:
 3. Uses `git diff` to see the exact changes and inspects related files for context.
 4. Responds with a JSON object containing a score (0-100 or null) and a one-sentence rationale per axis.
 
-Results are written to `.agent-bench-results/<timestamp>/review.json` and `review.md`.
+Results are written to `.agent-benchmark-results/<timestamp>/review.json` and `review.md`.
 
 ## Review config
 
@@ -224,7 +224,7 @@ review:
   max_budget_usd: 0.50
 ```
 
-If `review` is omitted, `agent-bench review` uses all 14 default axes, the global model, and a $0.50 budget per session.
+If `review` is omitted, `agent-benchmark review` uses all 14 default axes, the global model, and a $0.50 budget per session.
 
 ### Default scoring axes
 
@@ -356,7 +356,7 @@ A -- No changes  | 60  | 90  | 77.5 | 80.0
 B -- Structured  | 45  | 95  | 80.0 | 82.5
 ```
 
-Results are written to `.agent-bench-results/<timestamp>/`:
+Results are written to `.agent-benchmark-results/<timestamp>/`:
 
 | File          | Contents                           |
 | ------------- | ---------------------------------- |
@@ -371,17 +371,17 @@ After a benchmark run, inspect the diffs manually:
 
 ```bash
 # View the diff for a specific variant
-git diff <base-commit>..<agent-bench/variant-key>
+git diff <base-commit>..<agent-benchmark/variant-key>
 
 # Or read the saved patch files
-cat .agent-bench-results/<timestamp>/<variant>/diff.patch
+cat .agent-benchmark-results/<timestamp>/<variant>/diff.patch
 ```
 
 Score each variant on the axes that matter to you and record the scores alongside `review.json` for comparison.
 
 ### Copilot review
 
-For Copilot-based code review, use the `agent-bench copilot-review` command (see above). It automates creating PRs for each variant and requesting Copilot reviews.
+For Copilot-based code review, use the `agent-benchmark copilot-review` command (see above). It automates creating PRs for each variant and requesting Copilot reviews.
 
 ## Report output
 
@@ -399,7 +399,7 @@ B -- Structured  | sonnet     | 32s      | 9,800     | 2,100      | $0.31   | Ba
 
 Input tokens include cache creation and cache read tokens.
 
-Results are also written to `.agent-bench-results/<timestamp>/`:
+Results are also written to `.agent-benchmark-results/<timestamp>/`:
 
 | File                     | Contents                                  |
 | ------------------------ | ----------------------------------------- |

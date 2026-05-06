@@ -1,8 +1,8 @@
-# Agent instructions for agent-bench
+# Agent instructions for agent-benchmark
 
 ## Project overview
 
-`agent-bench` is a Node.js CLI tool (ESM, no build step) that runs a coding task across multiple git worktrees -- each with different AI assistant config files -- and produces a comparison report. It is published to npm as `agent-bench`.
+`agent-benchmark` is a Node.js CLI tool (ESM, no build step) that runs a coding task across multiple git worktrees -- each with different AI assistant config files -- and produces a comparison report. It is published to npm as `agent-benchmark`.
 
 The entry point is `bin/cli.js`. All logic lives in `lib/`. Tests live in `test/`.
 
@@ -13,7 +13,7 @@ bin/cli.js              -- subcommand router
 lib/
   args.js               -- flag parsing (parseInitArgs, parseRunArgs)
   config.js             -- YAML load + validate (loadConfig)
-  init.js               -- agent-bench init (initBenchmark)
+  init.js               -- agent-benchmark init (initBenchmark)
   metrics.js            -- stream-json parsing (parseMetrics, createCollector)
   report.js             -- table render + file write (generateReport, writeResultFiles)
   runner.js             -- Claude process orchestration (runBenchmark)
