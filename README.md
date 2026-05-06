@@ -157,6 +157,35 @@ agent-bench review-cleanup benchmark.yaml [<timestamp>] [--yes]
 
 This is useful if you used a prior review run to inspect the variant branches manually, then want to remove the worktrees without re-running the review.
 
+### `agent-bench copilot-review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]`
+
+Create pull requests for each benchmark variant and request Copilot code reviews.
+
+```
+agent-bench copilot-review benchmark.yaml [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
+```
+
+| Argument / Flag     | Description                                                                    |
+| ------------------- | ------------------------------------------------------------------------------ |
+| `<benchmark.yaml>`  | Path to the benchmark config (provides repo, variant definitions, base branch) |
+| `<timestamp>`       | Which result set to create PRs for (default: most recent in `.agent-bench-results/`) |
+| `--dry-run`         | Print what would happen without creating PRs                                   |
+| `--yes`             | Skip confirmation prompt                                                       |
+| `--concurrency <n>` | Max parallel PR creation (default: all variants)                               |
+| `--no-cleanup`      | Leave worktrees after creating PRs (useful for manual inspection)              |
+
+**Security note:** This command uses the `gh` CLI to create PRs and request reviews. You will be asked to confirm before any operations are performed (bypass with `--yes`).
+
+For each variant:
+
+1. Checks out or creates a worktree at the variant's branch.
+2. Pushes the branch to the remote.
+3. Creates a PR with the benchmark task prompt and variant metadata.
+4. Requests Copilot review via `gh pr review --copilot`.
+5. Collects the PR URL for the final report.
+
+Results are printed to a summary table showing PR URLs.
+
 Each review session:
 
 1. Gets the full repository checked out at the variant's branch.
@@ -352,22 +381,7 @@ Score each variant on the axes that matter to you and record the scores alongsid
 
 ### Copilot review
 
-A separate workflow (`agent-bench copilot-review`) automates Copilot-based code review:
-
-1. Takes a result set timestamp.
-2. Reuses or recreates the variant worktrees (keep them with `--no-cleanup` on the original run).
-3. Pushes each variant branch to a remote.
-4. Creates a PR for each variant against the base branch.
-5. Requests Copilot review via `gh pr review --request @copilot`.
-6. Prints the PR links so you can visit them and read Copilot's feedback.
-
-This workflow is not yet implemented as a built-in command. You can replicate it manually with:
-
-```bash
-git push origin agent-bench/<variant-key>
-gh pr create --head agent-bench/<variant-key> --base main --title "Benchmark variant: <label>"
-gh pr review <pr-number> --request @copilot
-```
+For Copilot-based code review, use the `agent-bench copilot-review` command (see above). It automates creating PRs for each variant and requesting Copilot reviews.
 
 ## Report output
 
