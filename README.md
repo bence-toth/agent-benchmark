@@ -146,7 +146,7 @@ Each review session:
 
 ### `agent-benchmark review-cleanup <benchmark.yaml> [<timestamp>]`
 
-Remove review worktrees created by a prior review run.
+Remove review worktrees created by a prior `review --no-cleanup`.
 
 ```
 agent-benchmark review-cleanup benchmark.yaml [<timestamp>] [--yes]
@@ -158,7 +158,7 @@ agent-benchmark review-cleanup benchmark.yaml [<timestamp>] [--yes]
 | `<timestamp>`      | Which result set's worktrees to clean up (default: most recent in `.agent-benchmark-results/`) |
 | `--yes`            | Skip confirmation prompt                                                                       |
 
-This is useful if you used a prior review run to inspect the variant branches manually, then want to remove the worktrees without re-running the review.
+This is useful if you used a prior review with `--no-cleanup` to inspect the variant branches manually, then want to remove the worktrees without re-running the review.
 
 ### `agent-benchmark copilot-review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]`
 
@@ -200,7 +200,7 @@ Results are written to `.agent-benchmark-results/<timestamp>/review.json` and `r
 
 ### `agent-benchmark copilot-review-cleanup <benchmark.yaml> [--yes]`
 
-Remove Copilot review worktrees created by a prior copilot-review run.
+Remove Copilot review worktrees created by a prior `copilot-review --no-cleanup`.
 
 ```
 agent-benchmark copilot-review-cleanup benchmark.yaml [--yes]
@@ -211,7 +211,7 @@ agent-benchmark copilot-review-cleanup benchmark.yaml [--yes]
 | `<benchmark.yaml>` | Path to the benchmark config (provides variant definitions) |
 | `--yes`            | Skip confirmation prompt                                    |
 
-This is useful if you used a prior copilot-review run with `--no-cleanup` to inspect the variant branches or PRs manually, then want to remove the worktrees without re-running the review.
+This is useful if you used a prior copilot-review with `--no-cleanup` to inspect the variant branches or PRs manually, then want to remove the worktrees without re-running the review.
 
 ## Benchmark config
 
@@ -293,6 +293,49 @@ A variant with no `config_files` entry uses the repo's existing files as-is.
 - `README.md`
 - `CONTRIBUTING.md`
 
+## Report output
+
+After a run, a comparison table is printed to the terminal:
+
+```
+Benchmark: "Refactor auth middleware" (2026-05-01T12:00:00Z)
+Base commit: abc1234
+
+Metric             | A – No changes    | B – Structured
+-------------------+-------------------+---------------
+Model              | opusplan          | sonnet
+Duration           | 45s               | 32s
+Input tokens       | 12,340            | 9,800
+Output tokens      | 3,210             | 2,100
+Cache write tokens | 4,200             | 0
+Cache read tokens  | 6,100             | 8,300
+Cost               | $0.42             | $0.31
+Normalized cost    | $0.40             | $0.35
+Tool calls         | Bash:5 Edit:3     | Bash:3 Edit:2
+Diff (+/-)         | +120/-80          | +95/-60
+```
+
+Input tokens include cache creation and cache read tokens. Normalized cost re-prices all input tokens at the standard (non-cached) rate, removing variance caused by cache hits and misses between variants.
+
+Results are also written to `.agent-benchmark-results/<timestamp>/`:
+
+| File                     | Contents                                  |
+| ------------------------ | ----------------------------------------- |
+| `results.json`           | Structured metrics for all variants       |
+| `results.md`             | The table above in Markdown               |
+| `<variant>/events.jsonl` | Raw Claude stream-json events             |
+| `<variant>/diff.patch`   | Full unified diff relative to base commit |
+
+## Reproducibility
+
+The config file, base commit SHA, model, and prompt are recorded in every `results.json`. All worktrees branch from the same HEAD commit, so the only variable between runs is the config overlay.
+
+## Notes on prompt caching
+
+The first variant to finish will pay the cache creation cost. Later variants running on the same model and account may benefit from cached system prompts. Token counts in the report reflect the actual API charges for each variant, including cache hits.
+
+The **Normalized cost** row removes this variance by re-pricing all cached input tokens (both cache writes and cache reads) at the standard input rate. Use this row when comparing cost efficiency between variants, since it is independent of execution order and cache state.
+
 ## Review config
 
 The `review` key in `benchmark.yaml` controls the review command:
@@ -349,26 +392,31 @@ Duplicate axes are deduplicated (first occurrence wins). Axes not in the built-i
 
 After a review run, two tables are printed:
 
-**Per-variant scores** (one column per axis, `null` means not applicable):
+**Per-axis scores** (one column per variant, `null` means not applicable):
 
 ```
 Review scores for run 2026-05-01T12-00-00Z
 
-Variant          | focused | clear | conventional | robust | ...
------------------+---------+-------+--------------+--------+----
-A – No changes   | 85      | 90    | 75           | 60     | ...
-B – Structured   | 92      | 88    | 80           | 70     | ...
+Axis         | A – No changes | B – Structured
+-------------+----------------+---------------
+focused      | 85             | 92
+clear        | 90             | 88
+conventional | 75             | 80
+robust       | 60             | 70
+...          | ...            | ...
 ```
 
-**Aggregate statistics per variant** (null values excluded):
+**Aggregate statistics** (one column per variant, null values excluded):
 
 ```
 Aggregate scores per variant (null values excluded)
 
-Variant          | Min | Max | Avg  | Median
------------------+-----+-----+------+-------
-A – No changes   | 60  | 90  | 77.5 | 80.0
-B – Structured   | 45  | 95  | 80.0 | 82.5
+Metric | A – No changes | B – Structured
+-------+----------------+---------------
+Min    | 60             | 45
+Max    | 90             | 95
+Avg    | 77.5           | 80.0
+Median | 80.0           | 82.5
 ```
 
 Results are written to `.agent-benchmark-results/<timestamp>/`:
@@ -378,7 +426,11 @@ Results are written to `.agent-benchmark-results/<timestamp>/`:
 | `review.json` | Structured scores for all variants |
 | `review.md`   | The tables above in Markdown       |
 
-## Manual review workflows
+## Additional review workflows
+
+### Copilot review
+
+For Copilot-based code review, use the `agent-benchmark copilot-review` command (see above). It automates creating PRs for each variant and requesting Copilot reviews.
 
 ### Human review
 
@@ -393,53 +445,6 @@ cat .agent-benchmark-results/<timestamp>/<variant>/diff.patch
 ```
 
 Score each variant on the axes that matter to you and record the scores alongside `review.json` for comparison.
-
-### Copilot review
-
-For Copilot-based code review, use the `agent-benchmark copilot-review` command (see above). It automates creating PRs for each variant and requesting Copilot reviews.
-
-## Report output
-
-After a run, a comparison table is printed to the terminal:
-
-```
-Benchmark: "Refactor auth middleware" (2026-05-01T12:00:00Z)
-Base commit: abc1234
-
-Metric             | A – No changes    | B – Structured
--------------------+-------------------+---------------
-Model              | opusplan          | sonnet
-Duration           | 45s               | 32s
-Input tokens       | 12,340            | 9,800
-Output tokens      | 3,210             | 2,100
-Cache write tokens | 4,200             | 0
-Cache read tokens  | 6,100             | 8,300
-Cost               | $0.42             | $0.31
-Normalized cost    | $0.40             | $0.35
-Tool calls         | Bash:5 Edit:3     | Bash:3 Edit:2
-Diff (+/-)         | +120/-80          | +95/-60
-```
-
-Input tokens include cache creation and cache read tokens. Normalized cost re-prices all input tokens at the standard (non-cached) rate, removing variance caused by cache hits and misses between variants.
-
-Results are also written to `.agent-benchmark-results/<timestamp>/`:
-
-| File                     | Contents                                  |
-| ------------------------ | ----------------------------------------- |
-| `results.json`           | Structured metrics for all variants       |
-| `results.md`             | The table above in Markdown               |
-| `<variant>/events.jsonl` | Raw Claude stream-json events             |
-| `<variant>/diff.patch`   | Full unified diff relative to base commit |
-
-## Reproducibility
-
-The config file, base commit SHA, model, and prompt are recorded in every `results.json`. All worktrees branch from the same HEAD commit, so the only variable between runs is the config overlay.
-
-## Notes on prompt caching
-
-The first variant to finish will pay the cache creation cost. Later variants running on the same model and account may benefit from cached system prompts. Token counts in the report reflect the actual API charges for each variant, including cache hits.
-
-The **Normalized cost** row removes this variance by re-pricing all cached input tokens (both cache writes and cache reads) at the standard input rate. Use this row when comparing cost efficiency between variants, since it is independent of execution order and cache state.
 
 ## License
 
