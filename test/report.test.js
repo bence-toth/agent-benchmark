@@ -32,7 +32,7 @@ const sampleReport = {
   timestamp: '2026-05-01T00-00-00-000Z',
   variants: {
     baseline: {
-      label: 'A -- Baseline',
+      label: 'A – Baseline',
       metrics: {
         durationMs: 30000,
         inputTokens: 1000,
@@ -53,7 +53,7 @@ const sampleReport = {
       events: [{ type: 'result' }],
     },
     variant_b: {
-      label: 'B -- Variant',
+      label: 'B – Variant',
       error: 'budget exceeded',
     },
   },

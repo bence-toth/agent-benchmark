@@ -2,23 +2,23 @@
 
 ## Project overview
 
-`agent-benchmark` is a Node.js CLI tool (ESM, no build step) that runs a coding task across multiple git worktrees -- each with different AI assistant config files -- and produces a comparison report. It is published to npm as `agent-benchmark`.
+`agent-benchmark` is a Node.js CLI tool (ESM, no build step) that runs a coding task across multiple git worktrees – each with different AI assistant config files – and produces a comparison report. It is published to npm as `agent-benchmark`.
 
 The entry point is `bin/cli.js`. All logic lives in `lib/`. Tests live in `test/`.
 
 ## Architecture
 
 ```
-bin/cli.js              -- subcommand router
+bin/cli.js              – subcommand router
 lib/
-  args.js               -- flag parsing (parseInitArgs, parseRunArgs)
-  config.js             -- YAML load + validate (loadConfig)
-  init.js               -- agent-benchmark init (initBenchmark)
-  metrics.js            -- stream-json parsing (parseMetrics, createCollector)
-  report.js             -- table render + file write (generateReport, writeResultFiles)
-  runner.js             -- Claude process orchestration (runBenchmark)
-  worktree.js           -- git worktree lifecycle (createWorktree, applyConfigOverlay, removeWorktree, getDiffStats)
-  commands/             -- thin dispatchers that glue args -> lib modules
+  args.js               – flag parsing (parseInitArgs, parseRunArgs)
+  config.js             – YAML load + validate (loadConfig)
+  init.js               – agent-benchmark init (initBenchmark)
+  metrics.js            – stream-json parsing (parseMetrics, createCollector)
+  report.js             – table render + file write (generateReport, writeResultFiles)
+  runner.js             – Claude process orchestration (runBenchmark)
+  worktree.js           – git worktree lifecycle (createWorktree, applyConfigOverlay, removeWorktree, getDiffStats)
+  commands/             – thin dispatchers that glue args -> lib modules
 ```
 
 ## Key constraints
@@ -49,7 +49,7 @@ Write no comments unless the reason is non-obvious. No JSDoc. No multi-line comm
 
 ## Commit style
 
-Each commit must be atomic -- one logical change, tests passing.
+Each commit must be atomic – one logical change, tests passing.
 
 Format: `<type>: <what changed>` (feat / fix / test / refactor / docs / chore). No period. Under 72 chars. Always append:
 

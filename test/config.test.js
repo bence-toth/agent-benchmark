@@ -120,12 +120,12 @@ prompt: "Test task"
 model: opusplan
 variants:
   baseline:
-    label: "A -- opus"
+    label: "A – opus"
   variant_b:
-    label: "B -- sonnet"
+    label: "B – sonnet"
     model: sonnet
   variant_c:
-    label: "C -- inherit default"
+    label: "C – inherit default"
 `,
     )
     const config = await loadConfig(p)

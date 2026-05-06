@@ -8,7 +8,7 @@ Use it to answer: _does a better CLAUDE.md actually make Claude Code faster and 
 
 1. You scaffold a benchmark directory from a target repo (`init`).
 2. You edit the variant config files (CLAUDE.md, AGENTS.md, README.md, etc.) to test your ideas.
-3. You run the benchmark (`run`) -- each variant gets its own git worktree, Claude runs in all of them in parallel, and you get a comparison table of metrics and diffs.
+3. You run the benchmark (`run`) – each variant gets its own git worktree, Claude runs in all of them in parallel, and you get a comparison table of metrics and diffs.
 4. You score the code quality of each variant's changes (`review`) along configurable axes (0-100) to see which configuration produces better-quality code.
 
 ## Requirements
@@ -47,8 +47,8 @@ npx agent-benchmark <command>
 npx agent-benchmark init /path/to/your-project
 
 # 2. Edit the variant files
-#    variants/baseline/  -- leave as-is (or delete config_files entry to use repo directly)
-#    variants/variant_b/ -- your experimental config
+#    variants/baseline/  – leave as-is (or delete config_files entry to use repo directly)
+#    variants/variant_b/ – your experimental config
 
 # 3. Fill in the prompt in agent-benchmark/benchmark.yaml
 
@@ -268,23 +268,23 @@ repo: /path/to/your-project
 # Each variant gets its own worktree and config overlay.
 variants:
   baseline:
-    label: 'A -- No changes'
+    label: 'A – No changes'
     # No config_files: uses the repo's existing config as-is.
 
   structured_claude:
-    label: 'B -- Structured CLAUDE.md'
+    label: 'B – Structured CLAUDE.md'
     config_files:
       CLAUDE.md: ./variants/variant_b/CLAUDE.md
 
   with_agents:
-    label: 'C -- CLAUDE.md + AGENTS.md (sonnet)'
+    label: 'C – CLAUDE.md + AGENTS.md (sonnet)'
     model: sonnet
     config_files:
       CLAUDE.md: ./variants/variant_c/CLAUDE.md
       AGENTS.md: ./variants/variant_c/AGENTS.md
 
   minimal_readme:
-    label: 'D -- Lean README context'
+    label: 'D – Lean README context'
     config_files:
       CLAUDE.md: ./variants/variant_d/CLAUDE.md
       README.md: ./variants/variant_d/README.md
@@ -294,11 +294,11 @@ variants:
 
 | Field            | Required | Default    | Description                                                 |
 | ---------------- | -------- | ---------- | ----------------------------------------------------------- |
-| `prompt`         | yes      | --         | The task prompt sent to Claude in every variant             |
+| `prompt`         | yes      | –          | The task prompt sent to Claude in every variant             |
 | `model`          | no       | `opusplan` | Global default Claude model (can be overridden per-variant) |
 | `max_budget_usd` | no       | `1.00`     | Per-variant spend cap in USD                                |
 | `repo`           | no       | `cwd`      | Absolute path to the target git repository                  |
-| `variants`       | yes      | --         | Map of variant keys to variant definitions                  |
+| `variants`       | yes      | –          | Map of variant keys to variant definitions                  |
 
 ### Variant definition
 
@@ -341,8 +341,8 @@ Review scores for run 2026-05-01T12-00-00Z
 
 Variant          | focused | clear | conventional | robust | ...
 -----------------+---------+-------+--------------+--------+----
-A -- No changes  | 85      | 90    | 75           | 60     | ...
-B -- Structured  | 92      | 88    | 80           | 70     | ...
+A – No changes  | 85      | 90    | 75           | 60     | ...
+B – Structured  | 92      | 88    | 80           | 70     | ...
 ```
 
 **Aggregate statistics per variant** (null values excluded):
@@ -352,8 +352,8 @@ Aggregate scores per variant (null values excluded)
 
 Variant          | Min | Max | Avg  | Median
 -----------------+-----+-----+------+-------
-A -- No changes  | 60  | 90  | 77.5 | 80.0
-B -- Structured  | 45  | 95  | 80.0 | 82.5
+A –No changes  | 60  | 90  | 77.5 | 80.0
+B – Structured  | 45  | 95  | 80.0 | 82.5
 ```
 
 Results are written to `.agent-benchmark-results/<timestamp>/`:
@@ -393,8 +393,8 @@ Base commit: abc1234
 
 Variant          | Model      | Duration | Input tok | Output tok | Cost    | Tool calls       | Diff (+/-)
 -----------------+------------+----------+-----------+------------+---------+------------------+----------
-A -- No changes  | opusplan   | 45s      | 12,340    | 3,210      | $0.42   | Bash:5 Edit:3    | +120/-80
-B -- Structured  | sonnet     | 32s      | 9,800     | 2,100      | $0.31   | Bash:3 Edit:2    | +95/-60
+A – No changes  | opusplan   | 45s      | 12,340    | 3,210      | $0.42   | Bash:5 Edit:3    | +120/-80
+B – Structured  | sonnet     | 32s      | 9,800     | 2,100      | $0.31   | Bash:3 Edit:2    | +95/-60
 ```
 
 Input tokens include cache creation and cache read tokens.
