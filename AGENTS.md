@@ -4,21 +4,34 @@
 
 `agent-benchmark` is a Node.js CLI tool (ESM, no build step) that runs a coding task across multiple git worktrees – each with different AI assistant config files – and produces a comparison report. It is published to npm as `agent-benchmark`.
 
-The entry point is `bin/cli.js`. All logic lives in `lib/`. Tests live in `test/`.
+The entry point is `bin/cli.js`. All logic lives in `lib/`. Tests are flat in `test/` (no subdirectories).
 
 ## Architecture
 
 ```
 bin/cli.js              – subcommand router
 lib/
-  args.js               – flag parsing (parseInitArgs, parseRunArgs)
+  args.js               – flag parsing (parseInitArgs, parseRunArgs, parseReviewArgs, parseCopilotReviewArgs)
   config.js             – YAML load + validate (loadConfig)
+  copilot-reviewer.js   – GitHub Copilot review orchestration (runCopilotReview)
   init.js               – agent-benchmark init (initBenchmark)
   metrics.js            – stream-json parsing (parseMetrics, createCollector)
-  report.js             – table render + file write (generateReport, writeResultFiles)
+  pricing.js            – cost normalization accounting for cache pricing (normalizedCost)
+  report.js             – table render + file write (generateReport, writeResultFiles, listResults, showResult, resolveTimestamp, loadResultSet)
+  review-prompt.js      – review prompt construction (buildReviewPrompt)
+  review-report.js      – review report render + file write (printReviewReport, writeReviewFiles)
+  reviewer.js           – Claude-based review orchestration (runReview)
   runner.js             – Claude process orchestration (runBenchmark)
-  worktree.js           – git worktree lifecycle (createWorktree, applyConfigOverlay, removeWorktree, getDiffStats)
-  commands/             – thin dispatchers that glue args -> lib modules
+  worktree.js           – git worktree lifecycle (worktreePath, branchName, createWorktree, applyConfigOverlay, commitChanges, discardChanges, removeWorktree, pushBranch, getBaseCommit, getDiffStats)
+  commands/
+    copilot-review.js         – copilot-review subcommand
+    copilot-review-cleanup.js – copilot-review-cleanup subcommand
+    init.js                   – init subcommand
+    results.js                – results subcommand
+    review.js                 – review subcommand
+    review-cleanup.js         – review-cleanup subcommand
+    run.js                    – run subcommand
+    run-cleanup.js            – run-cleanup subcommand
 ```
 
 ## Key constraints
@@ -31,7 +44,7 @@ lib/
 ## Testing
 
 ```bash
-npm test                  # all tests
+npm test # all tests
 ```
 
 - Unit tests must not spawn subprocesses or touch the real filesystem. Use `os.tmpdir()` for any temp files.
@@ -51,29 +64,12 @@ Write no comments unless the reason is non-obvious. No JSDoc. No multi-line comm
 
 Each commit must be atomic – one logical change, tests passing.
 
-Format: `<type>: <what changed>` (feat / fix / test / refactor / docs / chore). No period. Under 72 chars. Always append:
+Format: `<type>: <what changed>` (feat / fix / test / refactor / docs / chore). No period. Under 72 chars.
 
-```
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
-```
+## Before finishing a task
 
-## Common tasks
-
-### Add a new CLI flag to `run`
-
-1. Parse it in `lib/args.js` inside `parseRunArgs`.
-2. Thread it through `lib/commands/run.js` to `lib/runner.js`.
-3. Add a test in `test/unit/args.test.js`.
-
-### Add a new metric to the report
-
-1. Extract it in `lib/metrics.js` inside `parseMetrics`.
-2. Add it to `COLUMNS` and `buildRow` in `lib/report.js`.
-3. Add/update tests in `test/unit/metrics.test.js` and `test/unit/report.test.js`.
-
-### Add a recognized config file to `init`
-
-Append the repo-relative path to `AI_CONFIG_FILES` or `DOC_FILES` in `lib/init.js`.
+- Run `npm run build` to verify the project builds cleanly.
+- Update `README.md` and `AGENTS.md` to reflect any changes to the public interface, architecture, or workflow.
 
 ## What to avoid
 
