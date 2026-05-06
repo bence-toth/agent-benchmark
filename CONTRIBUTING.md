@@ -10,6 +10,41 @@ npm install
 
 No build step. The package runs directly from source as ESM.
 
+## Running locally without publishing
+
+To test changes locally without publishing to NPM:
+
+### Via npm link (preferred for rapid iteration)
+
+```bash
+# In the agent-bench directory
+npm link
+
+# The agent-bench command is now available globally from your local source:
+agent-bench --help
+
+# When done, unlink:
+npm unlink -g agent-bench
+```
+
+### Via npm pack (simulate the published package)
+
+```bash
+# In the agent-bench directory
+npm pack
+
+# This creates agent-bench-0.1.0.tgz. Install it elsewhere:
+npm install /path/to/agent-bench-0.1.0.tgz
+```
+
+### Direct invocation (for CLI testing)
+
+```bash
+# Run the CLI directly from source without installing:
+node bin/cli.js --help
+node bin/cli.js init /path/to/my-repo
+```
+
 ## Running tests
 
 ```bash
@@ -92,6 +127,8 @@ No period at the end of the subject line. Keep the subject under 72 characters.
 
 ## Publishing
 
+### Automated publishing (recommended)
+
 Releases are automated via GitHub Actions on version tag pushes. To cut a release:
 
 1. Bump `version` in `package.json`.
@@ -100,3 +137,22 @@ Releases are automated via GitHub Actions on version tag pushes. To cut a releas
 4. Push: `git push origin main --tags`.
 
 The `publish.yml` workflow runs `npm publish` automatically when a `v*` tag is pushed. An `NPM_TOKEN` secret must be configured in the repository settings.
+
+### Manual publishing
+
+If GitHub Actions is unavailable or you need to publish manually:
+
+```bash
+# Verify the package before publishing
+npm run build        # runs tests, lint, and format checks
+npm pack             # dry-run, shows what would be packed
+
+# Publish to NPM
+npm publish
+```
+
+**Prerequisites:**
+
+- You must be logged in: `npm login`
+- You must have publish permissions for the `agent-bench` package on NPM
+- The version in `package.json` must not already exist on NPM
