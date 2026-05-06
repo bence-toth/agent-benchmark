@@ -168,7 +168,7 @@ Results are written to `.agent-bench-results/<timestamp>/review.json` and `revie
 
 ## Review config
 
-The optional `review` key in `benchmark.yaml` controls the review command:
+The `review` key in `benchmark.yaml` controls the review command:
 
 ```yaml
 review:
@@ -297,7 +297,7 @@ A variant with no `config_files` entry uses the repo's existing files as-is.
 - `SKILLS.md`
 - `.github/copilot-instructions.md`
 
-**Repo documentation (optional):**
+**Repo documentation:**
 
 - `README.md`
 - `CONTRIBUTING.md`

@@ -59,6 +59,8 @@ describe('initBenchmark', () => {
     assert.ok(yaml.includes('TODO: describe the task'))
     assert.ok(yaml.includes('baseline'))
     assert.ok(yaml.includes('variant_b'))
+    assert.ok(yaml.includes('review:'))
+    assert.ok(yaml.includes('axes:'))
 
     // baseline variant should contain copied files
     const claudeMd = await fs.readFile(
