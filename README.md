@@ -97,6 +97,20 @@ agent-bench run benchmark.yaml [--dry-run] [--yes] [--concurrency <n>] [--no-cle
 
 **Security note:** This command runs Claude with `--dangerously-skip-permissions`, giving it full filesystem and shell access with no confirmation prompts. You will be asked to confirm before any processes are spawned (bypass with `--yes`).
 
+### `agent-bench run-cleanup <benchmark.yaml>`
+
+Remove worktrees and branches created by a prior `run --no-cleanup`.
+
+```
+agent-bench run-cleanup benchmark.yaml [--yes]
+```
+
+| Flag   | Description             |
+| ------ | ----------------------- |
+| `--yes` | Skip the confirmation prompt |
+
+This is useful if you ran with `--no-cleanup` to inspect results, then want to clean up manually later.
+
 ### `agent-bench results`
 
 List past benchmark result sets stored in `.agent-bench-results/`.
@@ -123,6 +137,24 @@ agent-bench review benchmark.yaml [<timestamp>] [--dry-run] [--yes] [--concurren
 | `--concurrency <n>` | Max parallel review sessions (default: all variants)                           |
 
 **Security note:** Like `run`, this command spawns Claude with `--dangerously-skip-permissions`. You will be asked to confirm before sessions are spawned (bypass with `--yes`).
+
+Each review session:
+
+### `agent-bench review-cleanup <benchmark.yaml> [<timestamp>]`
+
+Remove review worktrees created by a prior review run.
+
+```
+agent-bench review-cleanup benchmark.yaml [<timestamp>] [--yes]
+```
+
+| Argument / Flag | Description                                                                  |
+| --------------- | ---------------------------------------------------------------------------- |
+| `<benchmark.yaml>` | Path to the benchmark config (provides variant definitions)                  |
+| `<timestamp>`   | Which result set's worktrees to clean up (default: most recent in `.agent-bench-results/`) |
+| `--yes`         | Skip confirmation prompt                                                    |
+
+This is useful if you used a prior review run to inspect the variant branches manually, then want to remove the worktrees without re-running the review.
 
 Each review session:
 
