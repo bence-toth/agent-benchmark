@@ -165,14 +165,14 @@ Create pull requests for each benchmark variant and request Copilot code reviews
 agent-bench copilot-review benchmark.yaml [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
 ```
 
-| Argument / Flag     | Description                                                                    |
-| ------------------- | ------------------------------------------------------------------------------ |
-| `<benchmark.yaml>`  | Path to the benchmark config (provides repo, variant definitions, base branch) |
+| Argument / Flag     | Description                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------ |
+| `<benchmark.yaml>`  | Path to the benchmark config (provides repo, variant definitions, base branch)       |
 | `<timestamp>`       | Which result set to create PRs for (default: most recent in `.agent-bench-results/`) |
-| `--dry-run`         | Print what would happen without creating PRs                                   |
-| `--yes`             | Skip confirmation prompt                                                       |
-| `--concurrency <n>` | Max parallel PR creation (default: all variants)                               |
-| `--no-cleanup`      | Leave worktrees after creating PRs (useful for manual inspection)              |
+| `--dry-run`         | Print what would happen without creating PRs                                         |
+| `--yes`             | Skip confirmation prompt                                                             |
+| `--concurrency <n>` | Max parallel PR creation (default: all variants)                                     |
+| `--no-cleanup`      | Leave worktrees after creating PRs (useful for manual inspection)                    |
 
 **Security note:** This command uses the `gh` CLI to create PRs and request reviews. You will be asked to confirm before any operations are performed (bypass with `--yes`).
 
