@@ -274,21 +274,18 @@ variants:
 | `model`        | no       | Claude model to use for this variant (inherits global `model` if unspecified) |
 | `config_files` | no       | Map of `<repo-relative dest>: <source path>` file overlays                    |
 
-`config_files` source paths are resolved relative to the directory containing `benchmark.yaml`. Destination paths are repo-relative (e.g. `CLAUDE.md`, `.github/copilot-instructions.md`).
+`config_files` source paths are resolved relative to the directory containing `benchmark.yaml`. Destination paths are repo-relative (e.g. `CLAUDE.md`, `.github/copilot-instructions.md`). Any file can be used as an overlay -- the destination path is not limited to AI config files. For example, you could override `src/config.json` or `tsconfig.json` if that is relevant to your benchmark.
 
 A variant with no `config_files` entry uses the repo's existing files as-is.
 
-## Recognized config files
+## Automatically recognized config files
 
 `init` scans for these files and copies whichever exist:
 
 **AI assistant config:**
 
-- `CLAUDE.md`
-- `.claude/CLAUDE.md`
-- `AGENTS.md`
-- `.claude/agents/*.md`
-- `SKILLS.md`
+- `CLAUDE.md` and `AGENTS.md` (from any location, including subfolders)
+- `.claude/` folder and contents
 - `.github/copilot-instructions.md`
 
 **Repo documentation:**

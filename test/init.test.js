@@ -29,6 +29,12 @@ before(async () => {
   await fs.writeFile(path.join(repoDir, 'README.md'), '# My Repo\n')
   await fs.mkdir(path.join(repoDir, '.github'), { recursive: true })
   await fs.writeFile(path.join(repoDir, '.github', 'copilot-instructions.md'), '# Copilot\n')
+  await fs.mkdir(path.join(repoDir, '.claude', 'agents'), { recursive: true })
+  await fs.writeFile(path.join(repoDir, '.claude', 'settings.json'), '{}')
+  await fs.writeFile(path.join(repoDir, '.claude', 'agents', 'reviewer.md'), '# Reviewer\n')
+  await fs.mkdir(path.join(repoDir, 'subdir'), { recursive: true })
+  await fs.writeFile(path.join(repoDir, 'subdir', 'CLAUDE.md'), '# Sub Instructions\n')
+  await fs.writeFile(path.join(repoDir, 'AGENTS.md'), '# Agents\n')
 
   await git('add', '.')
   await git('commit', '-m', 'init')
@@ -80,6 +86,33 @@ describe('initBenchmark', () => {
       'utf8',
     )
     assert.ok(copilot.includes('Copilot'))
+
+    // .claude/ folder contents should be copied
+    const settings = await fs.readFile(
+      path.join(benchDir, 'variants', 'baseline', '.claude', 'settings.json'),
+      'utf8',
+    )
+    assert.ok(settings.includes('{}'))
+
+    const reviewer = await fs.readFile(
+      path.join(benchDir, 'variants', 'baseline', '.claude', 'agents', 'reviewer.md'),
+      'utf8',
+    )
+    assert.ok(reviewer.includes('Reviewer'))
+
+    // CLAUDE.md in subdir should be found
+    const subClaude = await fs.readFile(
+      path.join(benchDir, 'variants', 'baseline', 'subdir', 'CLAUDE.md'),
+      'utf8',
+    )
+    assert.ok(subClaude.includes('Sub Instructions'))
+
+    // AGENTS.md at root should be found
+    const agents = await fs.readFile(
+      path.join(benchDir, 'variants', 'baseline', 'AGENTS.md'),
+      'utf8',
+    )
+    assert.ok(agents.includes('Agents'))
   })
 
   it('creates the requested number of variant directories', async () => {
