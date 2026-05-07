@@ -132,6 +132,38 @@ describe('initBenchmark', () => {
     assert.ok(entries.includes('variant_c'))
   })
 
+  it('creates benchmark with no config files when repo has none', async () => {
+    const bareRepo = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-benchmark-bare-repo-'))
+    await execFileAsync('git', ['-C', bareRepo, 'init'])
+    await execFileAsync('git', ['-C', bareRepo, 'config', 'user.email', 'test@test.com'])
+    await execFileAsync('git', ['-C', bareRepo, 'config', 'user.name', 'Test'])
+    // Commit a plain file (no CLAUDE.md, AGENTS.md, .claude/, etc.)
+    await fs.writeFile(path.join(bareRepo, 'main.py'), 'print("hello")\n')
+    await execFileAsync('git', ['-C', bareRepo, 'add', '.'])
+    await execFileAsync('git', ['-C', bareRepo, 'commit', '-m', 'init'])
+
+    const savedCwd = process.cwd
+    process.cwd = () => benchCwd
+    try {
+      const lines = []
+      const orig = console.log
+      console.log = (...a) => lines.push(a.join(' '))
+      await initBenchmark({ repoPath: bareRepo, variants: 2, name: 'bare-bench' })
+      console.log = orig
+
+      const output = lines.join('\n')
+      assert.ok(output.includes('No recognized config files'))
+
+      // yaml should have no config_files block
+      const yaml = await fs.readFile(path.join(benchCwd, 'bare-bench', 'benchmark.yaml'), 'utf8')
+      assert.ok(yaml.includes('baseline'))
+      assert.ok(!yaml.includes('config_files'))
+    } finally {
+      process.cwd = savedCwd
+      await fs.rm(bareRepo, { recursive: true, force: true })
+    }
+  })
+
   it('throws for non-git repo', async () => {
     const notRepo = await fs.mkdtemp(path.join(os.tmpdir(), 'not-a-repo-'))
     try {

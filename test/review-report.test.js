@@ -3,30 +3,10 @@ import assert from 'node:assert/strict'
 import fs from 'fs/promises'
 import path from 'path'
 import os from 'os'
-
-let tmpDir
-let originalCwd
-
-before(async () => {
-  tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-benchmark-review-report-'))
-  originalCwd = process.cwd
-  process.cwd = () => tmpDir
-})
-
-after(async () => {
-  process.cwd = originalCwd
-  await fs.rm(tmpDir, { recursive: true, force: true })
-})
-
-async function importReviewReport() {
-  const { printReviewReport, writeReviewFiles } = await import('../lib/review-report.js')
-  return { printReviewReport, writeReviewFiles }
-}
+import { printReviewReport, writeReviewFiles } from '../lib/review-report.js'
 
 describe('printReviewReport', () => {
   it('prints review report with scores', async () => {
-    const { printReviewReport } = await importReviewReport()
-
     const axes = [{ name: 'correctness' }, { name: 'efficiency' }]
     const variantScores = {
       baseline: {
@@ -61,8 +41,6 @@ describe('printReviewReport', () => {
   })
 
   it('prints ERR for variant with error', async () => {
-    const { printReviewReport } = await importReviewReport()
-
     const axes = [{ name: 'correctness' }]
     const variantScores = {
       failed: {
@@ -77,15 +55,21 @@ describe('printReviewReport', () => {
     await printReviewReport('2026-05-01T00-00-00Z', axes, variantScores)
     console.log = orig
 
-    const output = lines.join('\n')
-    assert.ok(output.includes('ERR'))
+    assert.ok(lines.join('\n').includes('ERR'))
   })
 })
 
 describe('writeReviewFiles', () => {
-  it('writes review.json and review.md', async () => {
-    const { writeReviewFiles } = await importReviewReport()
+  let tmpDir
+  before(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-benchmark-review-report-'))
+    process.cwd = () => tmpDir
+  })
+  after(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true })
+  })
 
+  it('writes review.json and review.md', async () => {
     const axes = [{ name: 'code_quality' }, { name: 'performance' }]
     const variantScores = {
       test_variant: {
@@ -104,24 +88,18 @@ describe('writeReviewFiles', () => {
     await writeReviewFiles('2026-05-01T00-00-00Z', axes, variantScores)
     console.log = orig
 
-    // Check files were created
     const resultsDir = path.join(tmpDir, '.agent-benchmark-results', '2026-05-01T00-00-00Z')
-    const jsonPath = path.join(resultsDir, 'review.json')
-    const mdPath = path.join(resultsDir, 'review.md')
-
-    const json = JSON.parse(await fs.readFile(jsonPath, 'utf8'))
+    const json = JSON.parse(await fs.readFile(path.join(resultsDir, 'review.json'), 'utf8'))
     assert.equal(json.timestamp, '2026-05-01T00-00-00Z')
     assert.deepEqual(json.axes, ['code_quality', 'performance'])
     assert.ok(json.variants.test_variant.scores)
 
-    const md = await fs.readFile(mdPath, 'utf8')
+    const md = await fs.readFile(path.join(resultsDir, 'review.md'), 'utf8')
     assert.ok(md.includes('Review scores for run 2026-05-01T00-00-00Z'))
     assert.ok(md.includes('Test Variant'))
   })
 
   it('handles variant with null scores', async () => {
-    const { writeReviewFiles } = await importReviewReport()
-
     const axes = [{ name: 'axis1' }]
     const variantScores = {
       variant: {

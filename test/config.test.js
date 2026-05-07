@@ -138,6 +138,71 @@ variants:
   it('throws if config file does not exist', async () => {
     await assert.rejects(() => loadConfig('/nonexistent/path.yaml'), /Cannot read/)
   })
+
+  it('throws on invalid YAML', async () => {
+    const p = await writeConfig('invalid.yaml', ': bad: yaml: {{{')
+    await assert.rejects(() => loadConfig(p), /Invalid YAML/)
+  })
+
+  it('throws when doc is not a mapping', async () => {
+    const p = await writeConfig('scalar.yaml', '"just a string"')
+    await assert.rejects(() => loadConfig(p), /Config must be a YAML mapping/)
+  })
+
+  it('throws when prompt is missing', async () => {
+    const p = await writeConfig(
+      'no-prompt.yaml',
+      `
+variants:
+  a:
+    label: A
+  b:
+    label: B
+`,
+    )
+    await assert.rejects(() => loadConfig(p), /prompt/)
+  })
+
+  it('throws when variants is not a mapping', async () => {
+    const p = await writeConfig(
+      'bad-variants.yaml',
+      `
+prompt: "Do something"
+variants: "not a mapping"
+`,
+    )
+    await assert.rejects(() => loadConfig(p), /variants/)
+  })
+
+  it('throws when a variant entry is not a mapping', async () => {
+    const p = await writeConfig(
+      'bad-variant-entry.yaml',
+      `
+prompt: "Do something"
+variants:
+  a: "not a mapping"
+  b:
+    label: B
+`,
+    )
+    await assert.rejects(() => loadConfig(p), /must be a mapping/)
+  })
+
+  it('throws when variant config_files is not a mapping', async () => {
+    const p = await writeConfig(
+      'bad-config-files.yaml',
+      `
+prompt: "Do something"
+variants:
+  a:
+    label: A
+    config_files: "not a mapping"
+  b:
+    label: B
+`,
+    )
+    await assert.rejects(() => loadConfig(p), /config_files must be a mapping/)
+  })
 })
 
 describe('loadConfig review section', () => {
@@ -306,6 +371,78 @@ review:
 `,
     )
     await assert.rejects(() => loadConfig(p), /at least one axis/)
+  })
+
+  it('uses default axes when review section has no axes key', async () => {
+    const p = await writeConfig(
+      'review-no-axes-key.yaml',
+      `
+prompt: "Fix the bug"
+variants:
+  a:
+    label: A
+  b:
+    label: B
+review:
+  model: opus
+  max_budget_usd: 0.75
+`,
+    )
+    const config = await loadConfig(p)
+    assert.equal(config.review.axes.length, DEFAULT_AXES.length)
+    assert.equal(config.review.model, 'opus')
+    assert.equal(config.review.maxBudgetUsd, 0.75)
+  })
+
+  it('throws when review is not a mapping', async () => {
+    const p = await writeConfig(
+      'review-not-mapping.yaml',
+      `
+prompt: "Fix the bug"
+variants:
+  a:
+    label: A
+  b:
+    label: B
+review: "not a mapping"
+`,
+    )
+    await assert.rejects(() => loadConfig(p), /review.*must be a mapping/)
+  })
+
+  it('throws when review.axes is not a list', async () => {
+    const p = await writeConfig(
+      'review-axes-not-list.yaml',
+      `
+prompt: "Fix the bug"
+variants:
+  a:
+    label: A
+  b:
+    label: B
+review:
+  axes: "not a list"
+`,
+    )
+    await assert.rejects(() => loadConfig(p), /review\.axes.*must be a list/)
+  })
+
+  it('throws when an axis entry is invalid (not string or object)', async () => {
+    const p = await writeConfig(
+      'review-axes-bad-entry.yaml',
+      `
+prompt: "Fix the bug"
+variants:
+  a:
+    label: A
+  b:
+    label: B
+review:
+  axes:
+    - 42
+`,
+    )
+    await assert.rejects(() => loadConfig(p), /axis must be a string or an object/)
   })
 
   it('rejects axis object without name', async () => {

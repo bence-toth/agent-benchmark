@@ -17,8 +17,8 @@
     "pack": "npm pack --dry-run",
     "prepublishOnly": "npm run build",
     "publish": "npm publish",
-    "test": "node --test test/*.test.js",
-    "test:coverage": "mkdir -p coverage && node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test-reporter=spec --test-reporter-destination=stdout test/*.test.js"
+    "test": "node --test --experimental-test-isolation=none test/*.test.js",
+    "test:coverage": "mkdir -p coverage && node --test --experimental-test-isolation=none --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test-reporter=spec --test-reporter-destination=stdout test/*.test.js"
   },
   "files": [
     "bin/",

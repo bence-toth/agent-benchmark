@@ -1,7 +1,79 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseReviewScores, computeAggregates } from '../lib/reviewer.js'
+import { parseReviewScores, computeAggregates, runReview } from '../lib/reviewer.js'
 import { buildReviewPrompt } from '../lib/review-prompt.js'
+
+// ── runReview dry-run ────────────────────────────────────────────────────────
+
+describe('runReview', () => {
+  it('returns null and prints dry-run info without spawning processes', async () => {
+    const config = {
+      prompt: 'Fix the auth bug',
+      repo: '/repo',
+      variants: {
+        baseline: { label: 'Baseline' },
+        variant_b: { label: 'Variant B' },
+      },
+      review: {
+        axes: [{ name: 'focused', description: 'Stays on task.' }],
+        model: 'claude-opus-4-7',
+        maxBudgetUsd: 0.5,
+      },
+    }
+    const resultSet = {
+      variants: {
+        baseline: { error: null },
+        variant_b: { error: null },
+      },
+    }
+
+    const lines = []
+    const orig = console.log
+    console.log = (...args) => lines.push(args.join(' '))
+    const result = await runReview(config, resultSet, { dryRun: true })
+    console.log = orig
+
+    assert.equal(result, null)
+    const output = lines.join('\n')
+    assert.ok(output.includes('Dry run'))
+    assert.ok(output.includes('Baseline'))
+    assert.ok(output.includes('Variant B'))
+    assert.ok(output.includes('focused'))
+  })
+
+  it('skips errored variants in dry-run output', async () => {
+    const config = {
+      prompt: 'Fix the auth bug',
+      repo: '/repo',
+      variants: {
+        baseline: { label: 'Baseline' },
+        variant_b: { label: 'Variant B' },
+      },
+      review: {
+        axes: [{ name: 'focused', description: 'Stays on task.' }],
+        model: 'claude-opus-4-7',
+        maxBudgetUsd: 0.5,
+      },
+    }
+    const resultSet = {
+      variants: {
+        baseline: { error: null },
+        variant_b: { error: 'budget exceeded' },
+      },
+    }
+
+    const lines = []
+    const orig = console.log
+    console.log = (...args) => lines.push(args.join(' '))
+    await runReview(config, resultSet, { dryRun: true })
+    console.log = orig
+
+    const output = lines.join('\n')
+    assert.ok(output.includes('Baseline'))
+    assert.ok(output.includes('Skipped'))
+    assert.ok(output.includes('budget exceeded'))
+  })
+})
 
 // ── parseReviewScores ────────────────────────────────────────────────────────
 
