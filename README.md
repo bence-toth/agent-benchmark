@@ -164,6 +164,10 @@ Results are also written to `.agent-benchmark-results/<timestamp>/`:
 | `<variant>/events.jsonl` | Raw Claude stream-json events             |
 | `<variant>/diff.patch`   | Full unified diff relative to base commit |
 
+### Config file exclusion
+
+Config overlay files (those listed under `config_files` in a variant) are excluded from the variant's branch and diff unless Claude actually modified them. This ensures that diffs reflect only Claude's code changes, not the configuration differences between variants.
+
 ### Reproducibility
 
 The config file, base commit SHA, model, and prompt are recorded in every `results.json`. All worktrees branch from the same HEAD commit, so the only variable between runs is the config overlay.
@@ -286,18 +290,23 @@ cat .agent-benchmark-results/<timestamp>/<variant>/diff.patch
 
 Score each variant on the axes that matter to you and record the scores alongside `review.json` for comparison.
 
+### Config file exclusion
+
+Config overlay files (those listed under `config_files` in a variant) are excluded from the variant's branch and diff unless Claude actually modified them. This ensures that reviews reflect only Claude's code changes, not the configuration differences between variants.
+
 ## Commands
 
-### `agent-benchmark init <repo-path>`
+### Init
 
 Scaffolds a benchmark directory from a target repo.
 
 ```
-agent-benchmark init /path/to/repo [--variants <n>] [--name <name>]
+agent-benchmark init <repo-path> [--variants <n>] [--name <name>]
 ```
 
-| Flag             | Default           | Description                               |
+| Argument / Flag  | Default           | Description                               |
 | ---------------- | ----------------- | ----------------------------------------- |
+| `<repo-path>`    |                   | Local path to the target repository       |
 | `--variants <n>` | `2`               | Number of variants to create (minimum 2)  |
 | `--name <name>`  | `agent-benchmark` | Name of the benchmark directory to create |
 
@@ -311,98 +320,109 @@ What it does:
 
 If `agent-benchmark/` already exists, you will be prompted to use a numbered suffix, delete the existing directory, or cancel.
 
-### `agent-benchmark run <benchmark.yaml>`
+### Run
 
 Runs the benchmark defined in a YAML config file.
 
 ```
-agent-benchmark run benchmark.yaml [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
+agent-benchmark run <benchmark.yaml> [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
 ```
 
-| Flag                | Description                                                             |
-| ------------------- | ----------------------------------------------------------------------- |
-| `--dry-run`         | Validate config and print what would happen, without running Claude     |
-| `--yes`             | Skip the confirmation prompt before running                             |
-| `--concurrency <n>` | Max number of parallel Claude processes (default: all variants at once) |
-| `--no-cleanup`      | Skip the prompt to remove worktrees after the run                       |
+| Argument / Flag     | Default | Description                                                         |
+| ------------------- | ------- | ------------------------------------------------------------------- |
+| `<benchmark.yaml>`  |         | Path to the benchmark config                                        |
+| `--dry-run`         |         | Validate config and print what would happen, without running Claude |
+| `--yes`             |         | Skip the confirmation prompt before running                         |
+| `--concurrency <n>` | all     | Max number of parallel Claude processes                             |
+| `--no-cleanup`      |         | Skip the prompt to remove worktrees after the run                   |
 
 **Security note:** This command runs Claude with `--dangerously-skip-permissions`, giving it full filesystem and shell access with no confirmation prompts. You will be asked to confirm before any processes are spawned (bypass with `--yes`).
 
-### `agent-benchmark run-cleanup <benchmark.yaml>`
+### Run cleanup
 
 Remove worktrees and branches created by a prior `run --no-cleanup`.
 
 ```
-agent-benchmark run-cleanup benchmark.yaml [--yes]
+agent-benchmark run-cleanup <benchmark.yaml> [--yes]
 ```
 
-| Flag    | Description                  |
-| ------- | ---------------------------- |
-| `--yes` | Skip the confirmation prompt |
+| Argument / Flag    | Description                  |
+| ------------------ | ---------------------------- |
+| `<benchmark.yaml>` | Path to the benchmark config |
+| `--yes`            | Skip the confirmation prompt |
 
 This is useful if you ran with `--no-cleanup` to inspect results, then want to clean up manually later.
 
-### `agent-benchmark results`
+### Results
 
-List past benchmark result sets stored in `.agent-benchmark-results/`.
+Display benchmark result sets stored in `.agent-benchmark-results/`.
 
 ```
-agent-benchmark results              # list all
-agent-benchmark results <timestamp>  # re-print a specific report
+agent-benchmark results [<timestamp>] [--list]
 ```
 
-### `agent-benchmark review <benchmark.yaml>`
+| Argument / Flag | Description                    |
+| --------------- | ------------------------------ |
+| `<timestamp>`   | Which result set to display    |
+| `--list`        | List all available result sets |
+
+### Review
 
 Score the code quality of each variant's changeset along configurable axes (0-100) using AI-driven review sessions. Produces per-variant scores and cross-variant aggregate statistics.
 
 ```
-agent-benchmark review benchmark.yaml [<timestamp>] [--dry-run] [--yes] [--concurrency <n>]
+agent-benchmark review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>]
 ```
 
-| Argument / Flag     | Description                                                                      |
-| ------------------- | -------------------------------------------------------------------------------- |
-| `<benchmark.yaml>`  | Path to the benchmark config (provides repo, variant definitions, review axes)   |
-| `<timestamp>`       | Which result set to review (default: most recent in `.agent-benchmark-results/`) |
-| `--dry-run`         | Print what would happen without spawning Claude                                  |
-| `--yes`             | Skip confirmation prompt                                                         |
-| `--concurrency <n>` | Max parallel review sessions (default: all variants)                             |
-
-**Security note:** Like `run`, this command spawns Claude with `--dangerously-skip-permissions`. You will be asked to confirm before sessions are spawned (bypass with `--yes`).
+| Argument / Flag     | Default | Description                                     |
+| ------------------- | ------- | ----------------------------------------------- |
+| `<benchmark.yaml>`  |         | Path to the benchmark config                    |
+| `<timestamp>`       | latest  | Which result set to review                      |
+| `--dry-run`         |         | Print what would happen without spawning Claude |
+| `--yes`             |         | Skip confirmation prompt                        |
+| `--concurrency <n>` | all     | Max parallel review sessions                    |
 
 Each review session:
 
-### `agent-benchmark review-cleanup <benchmark.yaml> [<timestamp>]`
+1. Gets the full repository checked out at the variant's branch.
+2. Receives the original task prompt and is asked to score the change on each configured axis.
+3. Uses `git log` and `git diff` to locate and inspect the exact changes, and reads related files for context.
+4. Writes scores to `.review-scores.json` using the `Write` tool — a JSON object with a score (0-100 or null) and a one-sentence rationale per axis.
+
+Results are written to `.agent-benchmark-results/<timestamp>/review.json` and `review.md`.
+
+### Review cleanup
 
 Remove review worktrees created by a prior `review --no-cleanup`.
 
 ```
-agent-benchmark review-cleanup benchmark.yaml [<timestamp>] [--yes]
+agent-benchmark review-cleanup <benchmark.yaml> [<timestamp>] [--yes]
 ```
 
-| Argument / Flag    | Description                                                                                    |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| `<benchmark.yaml>` | Path to the benchmark config (provides variant definitions)                                    |
-| `<timestamp>`      | Which result set's worktrees to clean up (default: most recent in `.agent-benchmark-results/`) |
-| `--yes`            | Skip confirmation prompt                                                                       |
+| Argument / Flag    | Default | Description                              |
+| ------------------ | ------- | ---------------------------------------- |
+| `<benchmark.yaml>` |         | Path to the benchmark config             |
+| `<timestamp>`      | latest  | Which result set's worktrees to clean up |
+| `--yes`            |         | Skip confirmation prompt                 |
 
 This is useful if you used a prior review with `--no-cleanup` to inspect the variant branches manually, then want to remove the worktrees without re-running the review.
 
-### `agent-benchmark copilot-review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]`
+### Copilot review
 
 Create pull requests for each benchmark variant and request Copilot code reviews.
 
 ```
-agent-benchmark copilot-review benchmark.yaml [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
+agent-benchmark copilot-review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
 ```
 
-| Argument / Flag     | Description                                                                              |
-| ------------------- | ---------------------------------------------------------------------------------------- |
-| `<benchmark.yaml>`  | Path to the benchmark config (provides repo, variant definitions, base branch)           |
-| `<timestamp>`       | Which result set to create PRs for (default: most recent in `.agent-benchmark-results/`) |
-| `--dry-run`         | Print what would happen without creating PRs                                             |
-| `--yes`             | Skip confirmation prompt                                                                 |
-| `--concurrency <n>` | Max parallel PR creation (default: all variants)                                         |
-| `--no-cleanup`      | Leave worktrees after creating PRs (useful for manual inspection)                        |
+| Argument / Flag     | Default | Description                                                       |
+| ------------------- | ------- | ----------------------------------------------------------------- |
+| `<benchmark.yaml>`  |         | Path to the benchmark config                                      |
+| `<timestamp>`       | latest  | Which result set to create PRs for                                |
+| `--dry-run`         |         | Print what would happen without creating PRs                      |
+| `--yes`             |         | Skip confirmation prompt                                          |
+| `--concurrency <n>` | all     | Max parallel PR creation                                          |
+| `--no-cleanup`      |         | Leave worktrees after creating PRs (useful for manual inspection) |
 
 **Security note:** This command uses the `gh` CLI to create PRs and request reviews. You will be asked to confirm before any operations are performed (bypass with `--yes`).
 
@@ -416,27 +436,18 @@ For each variant:
 
 Results are printed to a summary table showing PR URLs.
 
-Each review session:
-
-1. Gets the full repository checked out at the variant's branch.
-2. Receives the original task prompt and is asked to score the change on each configured axis.
-3. Uses `git diff` to see the exact changes and inspects related files for context.
-4. Responds with a JSON object containing a score (0-100 or null) and a one-sentence rationale per axis.
-
-Results are written to `.agent-benchmark-results/<timestamp>/review.json` and `review.md`.
-
-### `agent-benchmark copilot-review-cleanup <benchmark.yaml> [--yes]`
+### Copilot review cleanup
 
 Remove Copilot review worktrees created by a prior `copilot-review --no-cleanup`.
 
 ```
-agent-benchmark copilot-review-cleanup benchmark.yaml [--yes]
+agent-benchmark copilot-review-cleanup <benchmark.yaml> [--yes]
 ```
 
-| Argument / Flag    | Description                                                 |
-| ------------------ | ----------------------------------------------------------- |
-| `<benchmark.yaml>` | Path to the benchmark config (provides variant definitions) |
-| `--yes`            | Skip confirmation prompt                                    |
+| Argument / Flag    | Description                  |
+| ------------------ | ---------------------------- |
+| `<benchmark.yaml>` | Path to the benchmark config |
+| `--yes`            | Skip confirmation prompt     |
 
 This is useful if you used a prior copilot-review with `--no-cleanup` to inspect the variant branches or PRs manually, then want to remove the worktrees without re-running the review.
 
