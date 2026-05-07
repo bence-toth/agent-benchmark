@@ -3,7 +3,11 @@ import assert from 'node:assert/strict'
 import fs from 'fs/promises'
 import path from 'path'
 import os from 'os'
+import { execFile } from 'child_process'
+import { promisify } from 'util'
 import { worktreePath, branchName, applyConfigOverlay } from '../lib/worktree.js'
+
+const execFileAsync = promisify(execFile)
 
 describe('worktree utilities', () => {
   describe('worktreePath', () => {
@@ -25,15 +29,19 @@ describe('worktree utilities', () => {
   })
 
   describe('applyConfigOverlay', () => {
-    it('copies config files into the worktree at the specified destinations', async () => {
+    it('copies config files and creates an overlay commit', async () => {
       const srcDir = await fs.mkdtemp(path.join(os.tmpdir(), 'wt-src-'))
       const wtDir = await fs.mkdtemp(path.join(os.tmpdir(), 'wt-dest-'))
       try {
+        // Initialize a git repo in the worktree dir
+        await execFileAsync('git', ['-C', wtDir, 'init'])
+        await execFileAsync('git', ['-C', wtDir, 'commit', '--allow-empty', '-m', 'init'])
+
         await fs.writeFile(path.join(srcDir, 'CLAUDE.md'), '# My Config\n')
         await fs.mkdir(path.join(srcDir, 'sub'), { recursive: true })
         await fs.writeFile(path.join(srcDir, 'sub', 'settings.json'), '{"key":"value"}')
 
-        await applyConfigOverlay(wtDir, {
+        const sha = await applyConfigOverlay(wtDir, {
           'CLAUDE.md': path.join(srcDir, 'CLAUDE.md'),
           '.claude/settings.json': path.join(srcDir, 'sub', 'settings.json'),
         })
@@ -43,6 +51,18 @@ describe('worktree utilities', () => {
 
         const settings = await fs.readFile(path.join(wtDir, '.claude', 'settings.json'), 'utf8')
         assert.ok(settings.includes('value'))
+
+        // Returns a valid commit SHA
+        assert.match(sha, /^[0-9a-f]{40}$/)
+
+        // The overlay is committed
+        const { stdout: status } = await execFileAsync('git', [
+          '-C',
+          wtDir,
+          'status',
+          '--porcelain',
+        ])
+        assert.equal(status.trim(), '')
       } finally {
         await fs.rm(srcDir, { recursive: true, force: true })
         await fs.rm(wtDir, { recursive: true, force: true })
