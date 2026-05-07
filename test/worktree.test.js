@@ -35,6 +35,8 @@ describe('worktree utilities', () => {
       try {
         // Initialize a git repo in the worktree dir
         await execFileAsync('git', ['-C', wtDir, 'init'])
+        await execFileAsync('git', ['-C', wtDir, 'config', 'user.email', 'test@example.com'])
+        await execFileAsync('git', ['-C', wtDir, 'config', 'user.name', 'Test'])
         await execFileAsync('git', ['-C', wtDir, 'commit', '--allow-empty', '-m', 'init'])
 
         await fs.writeFile(path.join(srcDir, 'CLAUDE.md'), '# My Config\n')
