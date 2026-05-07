@@ -16,7 +16,7 @@ Usage:
   agent-benchmark init <repo-path> [--variants <n>] [--name <name>]
   agent-benchmark run <benchmark.yaml> [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
   agent-benchmark run-cleanup <benchmark.yaml> [--yes]
-  agent-benchmark results [<timestamp>]
+  agent-benchmark results [<timestamp>] [--list]
   agent-benchmark review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>]
   agent-benchmark review-cleanup <benchmark.yaml> [<timestamp>] [--yes]
   agent-benchmark copilot-review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
