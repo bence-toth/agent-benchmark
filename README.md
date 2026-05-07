@@ -6,10 +6,10 @@ Put numbers to the vibes and make data-driven decisions by understanding how dif
 
 ## How it works
 
-1. You scaffold a benchmark directory from a target repo (`init`).
-2. You edit the variant config files (`CLAUDE.md`, `AGENTS.md`, `README.md` etc.) to test your ideas.
-3. You run the benchmark (`run`) – each variant gets its own git worktree, Claude runs in all of them in parallel, and you get a comparison table of metrics and diffs.
-4. You score the code quality of each variant's changes (`review`) along configurable axes (0-100) to see which configuration produces better-quality code.
+1. Scaffold a benchmark directory from a target repo (`init`).
+2. Edit the variant config files (`CLAUDE.md`, `AGENTS.md`, `README.md` etc.) to test your ideas.
+3. Run the benchmark (`run`) – each variant gets its own git worktree, Claude runs in all of them in parallel, and you get a comparison table of metrics and diffs.
+4. Score the code quality of each variant's changes (`review`) along configurable axes (0-100) to see which configuration produces better-quality code.
 
 ## Requirements
 
