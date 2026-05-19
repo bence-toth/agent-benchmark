@@ -338,21 +338,6 @@ agent-benchmark run <benchmark.yaml> [--dry-run] [--yes] [--concurrency <n>] [--
 
 **Security note:** This command runs Claude with `--dangerously-skip-permissions`, giving it full filesystem and shell access with no confirmation prompts. You will be asked to confirm before any processes are spawned (bypass with `--yes`).
 
-### Run cleanup
-
-Remove worktrees and branches created by a prior `run --no-cleanup`.
-
-```
-agent-benchmark run-cleanup <benchmark.yaml> [--yes]
-```
-
-| Argument / Flag    | Description                  |
-| ------------------ | ---------------------------- |
-| `<benchmark.yaml>` | Path to the benchmark config |
-| `--yes`            | Skip the confirmation prompt |
-
-This is useful if you ran with `--no-cleanup` to inspect results, then want to clean up manually later.
-
 ### Results
 
 Display benchmark result sets stored in `.agent-benchmark-results/`.
@@ -391,22 +376,6 @@ Each review session:
 
 Results are written to `.agent-benchmark-results/<timestamp>/review.json` and `review.md`.
 
-### Review cleanup
-
-Remove review worktrees created by a prior `review --no-cleanup`.
-
-```
-agent-benchmark review-cleanup <benchmark.yaml> [<timestamp>] [--yes]
-```
-
-| Argument / Flag    | Default | Description                              |
-| ------------------ | ------- | ---------------------------------------- |
-| `<benchmark.yaml>` |         | Path to the benchmark config             |
-| `<timestamp>`      | latest  | Which result set's worktrees to clean up |
-| `--yes`            |         | Skip confirmation prompt                 |
-
-This is useful if you used a prior review with `--no-cleanup` to inspect the variant branches manually, then want to remove the worktrees without re-running the review.
-
 ### Copilot review
 
 Create pull requests for each benchmark variant and request Copilot code reviews.
@@ -436,7 +405,42 @@ For each variant:
 
 Results are printed to a summary table showing PR URLs.
 
-### Copilot review cleanup
+### Cleanup commands
+
+Each `run`, `review`, and `copilot-review` command creates git worktrees and branches that are normally removed at the end of the session. If you passed `--no-cleanup` to keep them for manual inspection, you can use the following commands to remove them when you're done.
+
+#### Run cleanup
+
+Remove worktrees and branches created by a prior `run --no-cleanup`.
+
+```
+agent-benchmark run-cleanup <benchmark.yaml> [--yes]
+```
+
+| Argument / Flag    | Description                  |
+| ------------------ | ---------------------------- |
+| `<benchmark.yaml>` | Path to the benchmark config |
+| `--yes`            | Skip the confirmation prompt |
+
+This is useful if you ran with `--no-cleanup` to inspect results, then want to clean up manually later.
+
+#### Review cleanup
+
+Remove review worktrees created by a prior `review --no-cleanup`.
+
+```
+agent-benchmark review-cleanup <benchmark.yaml> [<timestamp>] [--yes]
+```
+
+| Argument / Flag    | Default | Description                              |
+| ------------------ | ------- | ---------------------------------------- |
+| `<benchmark.yaml>` |         | Path to the benchmark config             |
+| `<timestamp>`      | latest  | Which result set's worktrees to clean up |
+| `--yes`            |         | Skip confirmation prompt                 |
+
+This is useful if you used a prior review with `--no-cleanup` to inspect the variant branches manually, then want to remove the worktrees without re-running the review.
+
+#### Copilot review cleanup
 
 Remove Copilot review worktrees created by a prior `copilot-review --no-cleanup`.
 
