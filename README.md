@@ -6,17 +6,17 @@ Put numbers to the vibes and make data-driven decisions by understanding how dif
 
 ## How it works
 
-1. Scaffold a benchmark directory from a target repo (`init`).
-2. Edit the variant config files (`CLAUDE.md`, `AGENTS.md`, `README.md` etc.) to test your ideas.
-3. Run the benchmark (`run`) – each variant gets its own git worktree, Claude runs in all of them in parallel, and you get a comparison table of metrics and diffs.
-4. Score the code quality of each variant's changes (`review`) along configurable axes (0-100) to see which configuration produces better-quality code.
+1. Scaffold a benchmark directory from a target repo
+2. Edit the variant config files (`CLAUDE.md`, `AGENTS.md`, `README.md` etc.) to test your ideas
+3. Run the benchmark – each variant gets its own git worktree, Claude runs in all of them in parallel, and you get a comparison table of metrics and diffs
+4. Score the code quality of each variant's changes along configurable axes (0-100) to see which configuration produces better-quality code
 
 ## Requirements
 
 - Node.js 18+
 - Git 2.5+ (for worktree support)
 - [GitHub CLI](https://cli.github.com/) (`gh`) installed and authenticated (required for `copilot-review`)
-- [Claude Code](https://claude.ai/code) CLI installed and authenticated (`claude` on your PATH)
+- [Claude Code](https://claude.ai/code) CLI installed and authenticated (`claude` on your `PATH`)
 
 ## Installation
 
@@ -250,7 +250,7 @@ robust       | 60             | 70
 ...          | ...            | ...
 ```
 
-**Aggregate statistics** (one column per variant, null values excluded):
+**Aggregate statistics** (one column per variant, `null` values excluded):
 
 ```
 Aggregate scores per variant (null values excluded)
@@ -312,11 +312,11 @@ agent-benchmark init <repo-path> [--variants <n>] [--name <name>]
 
 What it does:
 
-- Verifies the target path is a git repository.
-- Scans for recognized config files (see [Recognized config files](#recognized-config-files)).
-- Creates an `agent-benchmark/` directory in the current working directory.
-- Copies found config files into each variant subdirectory.
-- Generates a pre-filled `benchmark.yaml`.
+- Verifies the target path is a git repository
+- Scans for recognized config files
+- Creates an `agent-benchmark/` directory in the current working directory
+- Copies found config files into each variant subdirectory
+- Generates a pre-filled `benchmark.yaml`
 
 If `agent-benchmark/` already exists, you will be prompted to use a numbered suffix, delete the existing directory, or cancel.
 
@@ -369,10 +369,10 @@ agent-benchmark review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--con
 
 Each review session:
 
-1. Gets the full repository checked out at the variant's branch.
-2. Receives the original task prompt and is asked to score the change on each configured axis.
-3. Uses `git log` and `git diff` to locate and inspect the exact changes, and reads related files for context.
-4. Writes scores to `.review-scores.json` using the `Write` tool — a JSON object with a score (0-100 or null) and a one-sentence rationale per axis.
+1. Gets the full repository checked out at the variant's branch
+2. Receives the original task prompt and is asked to score the change on each configured axis
+3. Uses `git log` and `git diff` to locate and inspect the exact changes, and reads related files for context
+4. Writes scores to `.review-scores.json` using the `Write` tool — a JSON object with a score (0-100 or `null`) and a one-sentence rationale per axis
 
 Results are written to `.agent-benchmark-results/<timestamp>/review.json` and `review.md`.
 
@@ -397,11 +397,11 @@ agent-benchmark copilot-review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes
 
 For each variant:
 
-1. Checks out or creates a worktree at the variant's branch.
-2. Pushes the branch to the remote.
-3. Creates a PR with the benchmark task prompt and variant metadata.
-4. Requests Copilot review via `gh pr review --copilot`.
-5. Collects the PR URL for the final report.
+1. Checks out or creates a worktree at the variant's branch
+2. Pushes the branch to the remote
+3. Creates a PR with the benchmark task prompt and variant metadata
+4. Requests Copilot review via `gh pr review --copilot`
+5. Collects the PR URL for the final report
 
 Results are printed to a summary table showing PR URLs.
 
@@ -457,4 +457,4 @@ This is useful if you used a prior copilot-review with `--no-cleanup` to inspect
 
 ## License
 
-MIT
+[Licensed under MIT.](./LICENSE) Do what you will.
