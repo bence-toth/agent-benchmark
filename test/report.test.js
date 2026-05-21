@@ -132,6 +132,52 @@ describe('generateReport', () => {
     assert.ok(output.includes('A – Baseline'))
   })
 
+  it('shows n/a for null metric fields', () => {
+    const reportWithNullMetrics = {
+      ...sampleReport,
+      variants: {
+        baseline: {
+          label: 'Null Metrics',
+          model: 'claude-opus-4-7',
+          branch: 'agent-benchmark/abc/baseline',
+          metrics: {
+            durationMs: null,
+            inputTokens: null,
+            outputTokens: null,
+            totalCostUsd: null,
+            numTurns: null,
+            toolCalls: {},
+            cacheCreationTokens: 0,
+            cacheReadTokens: 0,
+          },
+          diffStats: {
+            insertions: null,
+            deletions: null,
+            diffStat: '',
+            commits: [],
+          },
+          events: [],
+        },
+        variant_b: {
+          label: 'Other',
+          model: 'claude-opus-4-7',
+          branch: 'agent-benchmark/abc/variant_b',
+          metrics: sampleReport.variants.baseline.metrics,
+          diffStats: sampleReport.variants.baseline.diffStats,
+          events: [],
+        },
+      },
+    }
+    const lines = []
+    const orig = console.log
+    console.log = (...a) => lines.push(a.join(' '))
+    reportModule.generateReport(reportWithNullMetrics)
+    console.log = orig
+    const output = lines.join('\n')
+    assert.ok(output.includes('n/a'))
+    assert.ok(output.includes('none'))
+  })
+
   it('shows FAILED for errored variant', () => {
     const lines = []
     const orig = console.log
