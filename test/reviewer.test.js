@@ -1,6 +1,11 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseReviewScores, computeAggregates, runReview, extractFinalText } from '../lib/reviewer.js'
+import {
+  parseReviewScores,
+  computeAggregates,
+  runReview,
+  extractFinalText,
+} from '../lib/reviewer.js'
 import { buildReviewPrompt } from '../lib/review-prompt.js'
 
 // ── runReview dry-run ────────────────────────────────────────────────────────
@@ -202,9 +207,7 @@ describe('computeAggregates', () => {
 
 describe('extractFinalText', () => {
   it('returns result text from the last result event', () => {
-    const events = [
-      { type: 'result', result: 'Final answer' },
-    ]
+    const events = [{ type: 'result', result: 'Final answer' }]
     assert.equal(extractFinalText(events), 'Final answer')
   })
 
@@ -221,9 +224,7 @@ describe('extractFinalText', () => {
       {
         type: 'assistant',
         message: {
-          content: [
-            { type: 'text', text: 'Hello from assistant' },
-          ],
+          content: [{ type: 'text', text: 'Hello from assistant' }],
         },
       },
     ]

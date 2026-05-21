@@ -7,8 +7,12 @@ function makeFakeOut(isTTY, columns = 80) {
   return {
     isTTY,
     columns,
-    write(s) { chunks.push(s) },
-    output() { return chunks.join('') },
+    write(s) {
+      chunks.push(s)
+    },
+    output() {
+      return chunks.join('')
+    },
     chunks,
   }
 }
@@ -58,7 +62,7 @@ describe('createStatusBoard', () => {
       const board = createStatusBoard(['A', 'B'], out)
 
       board.set('A', 'starting...')
-      out.chunks.length = 0  // clear first draw
+      out.chunks.length = 0 // clear first draw
 
       board.set('B', 'starting...')
 

@@ -212,7 +212,11 @@ describe('worktree utilities', () => {
         await commitChanges(repo, undefined)
 
         const { stdout } = await execFileAsync('git', [
-          '-C', repo, 'log', '--oneline', `${baseSha}..HEAD`,
+          '-C',
+          repo,
+          'log',
+          '--oneline',
+          `${baseSha}..HEAD`,
         ])
         assert.ok(stdout.trim().length > 0)
       } finally {
@@ -243,7 +247,10 @@ describe('worktree utilities', () => {
         const baseSha = await getBaseCommit(repo)
         // Overlay commit is HEAD; parent is the real base
         const { stdout: parentSha } = await execFileAsync('git', [
-          '-C', repo, 'rev-parse', `${overlaySha}~1`,
+          '-C',
+          repo,
+          'rev-parse',
+          `${overlaySha}~1`,
         ])
         // No additional changes -- commitChanges should remove overlay
         await commitChanges(repo, overlaySha)
@@ -287,7 +294,10 @@ describe('worktree utilities', () => {
 
         // CLAUDE.md should be reverted to base state (not committed as a Claude change)
         const { stdout: showClaude } = await execFileAsync('git', [
-          '-C', repo, 'show', 'HEAD:CLAUDE.md',
+          '-C',
+          repo,
+          'show',
+          'HEAD:CLAUDE.md',
         ]).catch(() => ({ stdout: '' }))
         // It was not present in base so should not be in the commit tree
         assert.equal(showClaude, '')
