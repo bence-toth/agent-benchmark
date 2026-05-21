@@ -4,6 +4,18 @@ A CLI tool that runs the same coding task across multiple AI assistant config va
 
 Put numbers to the vibes and make data-driven decisions by understanding how different configurations (e.g. `CLAUDE.md`, `AGENTS.md`, agent skills, repo documentation, model choice) influence the way AI coding agents interact with your codebase in terms of cost, speed, and output quality.
 
+## What tasks work best
+
+agent-benchmark is designed for tasks that translate a single, self-contained prompt into a PR-ready changeset — no conversational back-and-forth, no clarifying questions, just a clear scope and requirements that an AI agent can execute autonomously from start to finish.
+
+Good prompts:
+
+- Have a clear, bounded outcome ("add pagination to the `/users` endpoint", "migrate all `var` declarations in `src/` to `const`/`let`")
+- Specify any constraints that matter ("keep the existing API shape", "don't add new dependencies")
+- Are representative of real tasks you'd delegate to an agent in practice
+
+Less suitable: open-ended explorations, multi-step dialogues, tasks that require human decisions mid-way, or tasks so large that a single run reliably hits the budget cap.
+
 ## How it works
 
 1. Scaffold a benchmark directory from a target repo
