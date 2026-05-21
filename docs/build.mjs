@@ -1,21 +1,24 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { marked } from 'marked';
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'fs'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+import { marked } from 'marked'
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const root = join(__dirname, '..');
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const root = join(__dirname, '..')
 
-const markdown = readFileSync(join(root, 'README.md'), 'utf8');
-const template = readFileSync(join(__dirname, 'template.html'), 'utf8');
+const markdown = readFileSync(join(root, 'README.md'), 'utf8')
+const template = readFileSync(join(__dirname, 'template.html'), 'utf8')
 
-marked.setOptions({ gfm: true, breaks: false });
-const body = marked.parse(markdown);
+marked.setOptions({ gfm: true, breaks: false })
+const body = marked.parse(markdown)
 
-const html = template.replace('<!-- CONTENT -->', body);
+const html = template.replace('<!-- CONTENT -->', body)
 
-const outDir = join(__dirname, 'dist');
-mkdirSync(outDir, { recursive: true });
-writeFileSync(join(outDir, 'index.html'), html, 'utf8');
-console.log('Built docs/dist/index.html');
+const outDir = join(__dirname, 'dist')
+mkdirSync(outDir, { recursive: true })
+writeFileSync(join(outDir, 'index.html'), html, 'utf8')
+copyFileSync(join(__dirname, 'favicon.png'), join(outDir, 'favicon.png'))
+copyFileSync(join(__dirname, 'logo-light.png'), join(outDir, 'logo-light.png'))
+copyFileSync(join(__dirname, 'logo-dark.png'), join(outDir, 'logo-dark.png'))
+console.log('Built docs/dist/index.html')
