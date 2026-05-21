@@ -255,5 +255,69 @@ describe('worktree utilities', () => {
         await fs.rm(srcDir, { recursive: true, force: true })
       }
     })
+
+    it('commits Claude changes alongside overlay, excluding unmodified overlay files', async () => {
+      const srcDir = await fs.mkdtemp(path.join(os.tmpdir(), 'wt-src-'))
+      const repo = await makeRepo()
+      try {
+        // Apply overlay with two files
+        await fs.writeFile(path.join(srcDir, 'CLAUDE.md'), '# config\n')
+        await fs.writeFile(path.join(srcDir, 'settings.json'), '{"key":"value"}\n')
+        const overlaySha = await applyConfigOverlay(repo, {
+          'CLAUDE.md': path.join(srcDir, 'CLAUDE.md'),
+          'settings.json': path.join(srcDir, 'settings.json'),
+        })
+
+        // Claude modifies settings.json but leaves CLAUDE.md untouched
+        await fs.writeFile(path.join(repo, 'settings.json'), '{"key":"modified"}\n')
+        // Claude also adds a new file
+        await fs.writeFile(path.join(repo, 'new.txt'), 'added by claude\n')
+
+        await commitChanges(repo, overlaySha)
+
+        // The final commit should include new.txt and modified settings.json
+        const { stdout: log } = await execFileAsync('git', ['-C', repo, 'log', '--oneline'])
+        assert.ok(log.trim().length > 0)
+
+        const newTxt = await fs.readFile(path.join(repo, 'new.txt'), 'utf8')
+        assert.equal(newTxt, 'added by claude\n')
+
+        const settings = await fs.readFile(path.join(repo, 'settings.json'), 'utf8')
+        assert.ok(settings.includes('modified'))
+
+        // CLAUDE.md should be reverted to base state (not committed as a Claude change)
+        const { stdout: showClaude } = await execFileAsync('git', [
+          '-C', repo, 'show', 'HEAD:CLAUDE.md',
+        ]).catch(() => ({ stdout: '' }))
+        // It was not present in base so should not be in the commit tree
+        assert.equal(showClaude, '')
+      } finally {
+        await fs.rm(repo, { recursive: true, force: true })
+        await fs.rm(srcDir, { recursive: true, force: true })
+      }
+    })
+
+    it('commits all Claude changes when overlay file was deleted by Claude', async () => {
+      const srcDir = await fs.mkdtemp(path.join(os.tmpdir(), 'wt-src-'))
+      const repo = await makeRepo()
+      try {
+        await fs.writeFile(path.join(srcDir, 'CLAUDE.md'), '# config\n')
+        const overlaySha = await applyConfigOverlay(repo, {
+          'CLAUDE.md': path.join(srcDir, 'CLAUDE.md'),
+        })
+
+        // Claude deletes the overlay file and adds something else
+        await fs.unlink(path.join(repo, 'CLAUDE.md'))
+        await fs.writeFile(path.join(repo, 'result.txt'), 'claude output\n')
+
+        await commitChanges(repo, overlaySha)
+
+        const result = await fs.readFile(path.join(repo, 'result.txt'), 'utf8')
+        assert.equal(result, 'claude output\n')
+      } finally {
+        await fs.rm(repo, { recursive: true, force: true })
+        await fs.rm(srcDir, { recursive: true, force: true })
+      }
+    })
   })
 })
