@@ -73,19 +73,19 @@ describe('worktree utilities', () => {
   })
 
   describe('branchName', () => {
-    it('prefixes with agent-benchmark', () => {
-      const branch = branchName('baseline')
-      assert.equal(branch, 'agent-benchmark/baseline')
+    it('prefixes with agent-benchmark and includes id', () => {
+      const branch = branchName('a1b2c3d4', 'baseline')
+      assert.equal(branch, 'agent-benchmark/a1b2c3d4/baseline')
     })
 
     it('works with variant keys containing dashes', () => {
-      const branch = branchName('variant-a-1')
-      assert.equal(branch, 'agent-benchmark/variant-a-1')
+      const branch = branchName('a1b2c3d4', 'variant-a-1')
+      assert.equal(branch, 'agent-benchmark/a1b2c3d4/variant-a-1')
     })
 
     it('works with numeric variant keys', () => {
-      const branch = branchName('variant_2')
-      assert.equal(branch, 'agent-benchmark/variant_2')
+      const branch = branchName('a1b2c3d4', 'variant_2')
+      assert.equal(branch, 'agent-benchmark/a1b2c3d4/variant_2')
     })
   })
 })
