@@ -2,7 +2,7 @@
 
 A CLI tool that runs the same coding task across multiple AI assistant config variants in parallel, then produces a side-by-side comparison of cost, speed, token usage, and diff output, and scores each variant on code quality axes using AI-driven review.
 
-Put numbers to the vibes and make data-driven decisions by understanding how different configurations (`CLAUDE.md`, `AGENTS.md`, repo documentation, model choice) influence the way AI coding agents interact with your codebase in terms of cost, speed, and output quality.
+Put numbers to the vibes and make data-driven decisions by understanding how different configurations (e.g. `CLAUDE.md`, `AGENTS.md`, agent skills, repo documentation, model choice) influence the way AI coding agents interact with your codebase in terms of cost, speed, and output quality.
 
 ## How it works
 
