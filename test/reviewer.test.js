@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseReviewScores, computeAggregates, runReview } from '../lib/reviewer.js'
+import { parseReviewScores, computeAggregates, runReview, extractFinalText } from '../lib/reviewer.js'
 import { buildReviewPrompt } from '../lib/review-prompt.js'
 
 // ── runReview dry-run ────────────────────────────────────────────────────────
@@ -195,6 +195,83 @@ describe('computeAggregates', () => {
     assert.equal(agg.max, 75)
     assert.equal(agg.avg, 75)
     assert.equal(agg.median, 75)
+  })
+})
+
+// ── extractFinalText ─────────────────────────────────────────────────────────
+
+describe('extractFinalText', () => {
+  it('returns result text from the last result event', () => {
+    const events = [
+      { type: 'result', result: 'Final answer' },
+    ]
+    assert.equal(extractFinalText(events), 'Final answer')
+  })
+
+  it('prefers the last result event when multiple exist', () => {
+    const events = [
+      { type: 'result', result: 'First' },
+      { type: 'result', result: 'Last' },
+    ]
+    assert.equal(extractFinalText(events), 'Last')
+  })
+
+  it('falls back to last assistant message text block when no result event', () => {
+    const events = [
+      {
+        type: 'assistant',
+        message: {
+          content: [
+            { type: 'text', text: 'Hello from assistant' },
+          ],
+        },
+      },
+    ]
+    assert.equal(extractFinalText(events), 'Hello from assistant')
+  })
+
+  it('prefers the last assistant message with text when result event has no result field', () => {
+    const events = [
+      { type: 'result' },
+      {
+        type: 'assistant',
+        message: {
+          content: [{ type: 'text', text: 'Fallback text' }],
+        },
+      },
+    ]
+    assert.equal(extractFinalText(events), 'Fallback text')
+  })
+
+  it('skips assistant events with non-array content', () => {
+    const events = [
+      { type: 'assistant', message: { content: 'not an array' } },
+      {
+        type: 'assistant',
+        message: { content: [{ type: 'text', text: 'Valid block' }] },
+      },
+    ]
+    assert.equal(extractFinalText(events), 'Valid block')
+  })
+
+  it('skips non-text content blocks', () => {
+    const events = [
+      {
+        type: 'assistant',
+        message: {
+          content: [
+            { type: 'tool_use', name: 'Bash' },
+            { type: 'text', text: 'After tool' },
+          ],
+        },
+      },
+    ]
+    assert.equal(extractFinalText(events), 'After tool')
+  })
+
+  it('returns empty string when no usable events exist', () => {
+    assert.equal(extractFinalText([]), '')
+    assert.equal(extractFinalText([{ type: 'system' }]), '')
   })
 })
 
