@@ -1,0 +1,1112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Run the same Claude Code task across multiple config variants and compare results"
+    />
+    <title>agent-benchmark</title>
+    <link rel="icon" type="image/png" href="./favicon.png" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&display=swap');
+
+      :root {
+        --bg: #ffffff;
+        --bg-code: #f4f5f7;
+        --bg-code-block: #f4f5f7;
+        --border: #e9e9ea;
+        --text: #414756;
+        --text-muted: #5e687e;
+        --link: #0a7ea4;
+        --link-hover: #2496bb;
+        --heading-border: #e9e9ea;
+        --table-row-alt: #f4f5f7;
+        --sidebar-bg: #f4f5f7;
+        --accent: #0a7ea4;
+        --header-height: 5rem;
+        --footer-height: 3rem;
+        --sidebar-width: 280px;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #191b20;
+          --bg-code: #23272f;
+          --bg-code-block: #23272f;
+          --border: #343843;
+          --text: #f6f7f9;
+          --text-muted: #99a1b3;
+          --link: #58c4dc;
+          --link-hover: #2eabc7;
+          --heading-border: #343843;
+          --table-row-alt: #23272f;
+          --sidebar-bg: #23272f;
+          --accent: #58c4dc;
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--link);
+        outline-offset: 4px;
+        border-radius: 2px;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          'Atkinson Hyperlegible Next',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Helvetica,
+          Arial,
+          sans-serif;
+        font-size: 16px;
+        line-height: 1.7;
+        padding-bottom: var(--footer-height);
+      }
+
+      a {
+        color: var(--link);
+        text-decoration: none;
+      }
+
+      a:hover {
+        color: var(--link-hover);
+        text-decoration: underline;
+      }
+
+      /* ── Header ── */
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        height: var(--header-height);
+      }
+
+      .header-inner {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.5rem;
+      }
+
+      .site-logo {
+        margin: 0;
+        font-family: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 1.75rem;
+        letter-spacing: -0.02em;
+      }
+
+      .site-logo a {
+        display: flex;
+        text-decoration: none;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 300;
+      }
+
+      .site-logo img {
+        height: 2.5rem;
+        width: auto;
+        display: block;
+      }
+
+      .header-links {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      .header-links a {
+        display: flex;
+        align-items: center;
+        color: var(--text-muted);
+        transition: color 0.15s;
+      }
+
+      .header-links a:hover {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      .header-links svg {
+        width: 1.75rem;
+        height: 1.75rem;
+        fill: currentColor;
+      }
+
+      /* ── Layout ── */
+
+      .layout {
+        display: flex;
+      }
+
+      .sidebar {
+        width: var(--sidebar-width);
+        flex-shrink: 0;
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--border);
+        padding: 1.5rem 1rem;
+        position: sticky;
+        top: var(--header-height);
+        max-height: calc(100vh - var(--header-height) - var(--footer-height));
+        overflow-y: auto;
+      }
+
+      @media (min-width: 1200px) {
+        .sidebar {
+          position: fixed;
+          top: var(--header-height);
+          left: 0;
+          height: calc(100vh - var(--header-height) - var(--footer-height));
+          overflow-y: auto;
+        }
+
+        .content-wrapper {
+          padding-left: var(--sidebar-width);
+        }
+      }
+
+      @media (max-width: 767px) {
+        .sidebar {
+          display: none;
+        }
+      }
+
+      .sidebar-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        margin: 0 0 0.75rem 0.25rem;
+      }
+
+      #toc {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      #toc li {
+        margin: 0;
+        padding: 0;
+      }
+
+      #toc a {
+        display: block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        color: var(--text);
+        font-size: 0.875rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      #toc a:focus-visible {
+        outline-offset: 1px;
+      }
+
+      #toc a:hover {
+        background: var(--border);
+        text-decoration: none;
+      }
+
+      #toc .toc-h2 {
+        padding-left: 0.5rem;
+      }
+
+      #toc .toc-h3 {
+        padding-left: 1.25rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+
+      /* ── Content wrapper ── */
+
+      .content-wrapper {
+        flex: 1;
+        min-width: 0;
+      }
+
+      /* ── Main content ── */
+
+      .content {
+        padding: 1.5rem 3rem 4rem;
+        max-width: 860px;
+        margin: 0 auto;
+      }
+
+      /* ── Headings ── */
+
+      .content h2,
+      .content h3,
+      .content h4 {
+        margin-top: 1.75em;
+        margin-bottom: 0.5em;
+        line-height: 1.3;
+        font-weight: 600;
+        scroll-margin-top: calc(var(--header-height) + 1rem);
+      }
+
+      .heading-anchor {
+        margin-left: 0.4em;
+        opacity: 0;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 400;
+        transition: opacity 0.15s;
+      }
+
+      .content h2:hover .heading-anchor,
+      .content h3:hover .heading-anchor {
+        opacity: 1;
+      }
+
+      .heading-anchor:focus-visible {
+        opacity: 1;
+      }
+
+      .content h2 {
+        font-size: 1.4rem;
+        border-bottom: 1px solid var(--heading-border);
+        padding-bottom: 0.3em;
+      }
+
+      .content h3 {
+        font-size: 1.1rem;
+      }
+
+      /* ── Code ── */
+
+      .content code {
+        background: var(--bg-code);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.1em 0.4em;
+        font-size: 0.875em;
+        font-family:
+          'Atkinson Hyperlegible Mono', ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono',
+          Menlo, monospace;
+      }
+
+      .content pre {
+        background: var(--bg-code-block);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1rem 1.25rem;
+        overflow-x: auto;
+        line-height: 1.5;
+      }
+
+      .content pre code {
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: 0.875em;
+      }
+
+      /* ── Tables ── */
+
+      .content table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+        margin: 1.25rem 0;
+        display: block;
+        overflow-x: auto;
+      }
+
+      .content th,
+      .content td {
+        border: 1px solid var(--border);
+        padding: 0.5rem 0.75rem;
+        text-align: left;
+      }
+
+      .content th {
+        background: var(--bg-code);
+        font-weight: 600;
+      }
+
+      .content tr:nth-child(even) td {
+        background: var(--table-row-alt);
+      }
+
+      /* ── Blockquote / HR / Lists ── */
+
+      .content blockquote {
+        margin: 1rem 0;
+        padding: 0.5rem 1rem;
+        border-left: 4px solid var(--border);
+        color: var(--text-muted);
+      }
+
+      .content hr {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 2rem 0;
+      }
+
+      .content ul,
+      .content ol {
+        padding-left: 1.75rem;
+      }
+
+      .content li + li {
+        margin-top: 0.25rem;
+      }
+
+      /* ── Footer ── */
+
+      .site-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        height: var(--footer-height);
+        background: var(--bg);
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+      }
+
+      .site-footer a {
+        color: var(--text-muted);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
+      .site-footer a:hover {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      /* ── Responsive ── */
+
+      @media (max-width: 767px) {
+        .content {
+          padding: 1.25rem 1.25rem 3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <h1 class="site-logo">
+          <a href="#">
+            <picture>
+              <source srcset="logo-dark.png" media="(prefers-color-scheme: dark)" />
+              <img src="logo-light.png" alt="agent-benchmark" />
+            </picture>
+            agent-benchmark
+          </a>
+        </h1>
+        <nav class="header-links" aria-label="External links">
+          <a
+            href="https://github.com/bence-toth/agent-benchmark"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub repository"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"
+              />
+            </svg>
+          </a>
+          <a
+            href="https://www.npmjs.com/package/agent-benchmark"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="npm package"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z"
+              />
+            </svg>
+          </a>
+        </nav>
+      </div>
+    </header>
+    <div class="layout">
+      <nav class="sidebar" aria-label="Table of contents">
+        <p class="sidebar-title">Contents</p>
+        <ul id="toc"></ul>
+      </nav>
+      <div class="content-wrapper">
+        <main class="content" id="main-content">
+          <h1>agent-benchmark</h1>
+<p>A CLI tool that runs the same coding task across multiple AI assistant config variants in parallel, then produces a side-by-side comparison of cost, speed, token usage, and diff output, and scores each variant on code quality axes using AI-driven review.</p>
+<p>Put numbers to the vibes and make data-driven decisions by understanding how different configurations (e.g. <code>CLAUDE.md</code>, <code>AGENTS.md</code>, agent skills, repo documentation, model choice) influence the way AI coding agents interact with your codebase in terms of cost, speed, and output quality.</p>
+<h2>How it works</h2>
+<ol>
+<li>Scaffold a benchmark directory from a target repo</li>
+<li>Edit the variant config files (<code>CLAUDE.md</code>, <code>AGENTS.md</code>, <code>README.md</code> etc.) to test your ideas</li>
+<li>Run the benchmark – each variant gets its own git worktree, Claude runs in all of them in parallel, and you get a comparison table of metrics and diffs</li>
+<li>Score the code quality of each variant&#39;s changes along configurable axes (0-100) to see which configuration produces better-quality code</li>
+</ol>
+<h2>Requirements</h2>
+<ul>
+<li>Node.js 18+</li>
+<li>Git 2.5+ (for worktree support)</li>
+<li><a href="https://cli.github.com/">GitHub CLI</a> (<code>gh</code>) installed and authenticated (required for <code>copilot-review</code>)</li>
+<li><a href="https://claude.ai/code">Claude Code</a> CLI installed and authenticated (<code>claude</code> on your <code>PATH</code>)</li>
+</ul>
+<h2>Installation</h2>
+<pre><code class="language-sh">npm install -g agent-benchmark
+</code></pre>
+<p>Or use without installing:</p>
+<pre><code class="language-sh">npx agent-benchmark &lt;command&gt;
+</code></pre>
+<h2>Quick start</h2>
+<pre><code class="language-sh"># 1. Scaffold a benchmark from your project
+npx agent-benchmark init /path/to/your-project
+
+# 2. Edit the variant files to test your hypothesis
+#    variants/baseline/  – leave as-is to use the repo&#39;s existing config
+#    variants/variant_b/ – add or modify CLAUDE.md, AGENTS.md, README.md, etc.
+
+# 3. Configure the benchmark in agent-benchmark/benchmark.yaml
+#    Set the task prompt, model, per-variant budget, and any other settings
+
+# 4. Run the benchmark — each variant runs in parallel in its own worktree
+npx agent-benchmark run agent-benchmark/benchmark.yaml
+
+# 5. Score the code quality of each variant&#39;s changeset
+npx agent-benchmark review agent-benchmark/benchmark.yaml
+
+# 6. Create pull requests and request Copilot reviews for each variant
+npx agent-benchmark copilot-review agent-benchmark/benchmark.yaml
+</code></pre>
+<h2>What tasks work best</h2>
+<p>agent-benchmark is designed for tasks that translate a single, self-contained prompt into a PR-ready changeset — no conversational back-and-forth, no clarifying questions, just a clear scope and requirements that an AI agent can execute autonomously from start to finish.</p>
+<p>Good prompts:</p>
+<ul>
+<li>Have a clear, bounded outcome (&quot;add pagination to the <code>/users</code> endpoint&quot;, &quot;migrate all <code>var</code> declarations in <code>src/</code> to <code>const</code>/<code>let</code>&quot;)</li>
+<li>Specify any constraints that matter (&quot;keep the existing API shape&quot;, &quot;don&#39;t add new dependencies&quot;)</li>
+<li>Are representative of real tasks you&#39;d delegate to an agent in practice</li>
+</ul>
+<p>Less suitable: open-ended explorations, multi-step dialogues, tasks that require human decisions mid-way, or tasks so large that a single run reliably hits the budget cap.</p>
+<h2>Benchmarks</h2>
+<h3>Benchmark configuration</h3>
+<p>A <code>benchmark.yaml</code> file drives each run:</p>
+<pre><code class="language-yaml"># The prompt given to Claude in every variant.
+prompt: &#39;Refactor the auth middleware to use async/await&#39;
+
+# Global model to use (optional, defaults to opusplan).
+# Can be overridden per-variant.
+model: opusplan
+
+# Maximum spend per variant in USD (safety cap).
+max_budget_usd: 1.00
+
+# The target repo to benchmark against (defaults to cwd if omitted).
+repo: /path/to/your-project
+
+# Each variant gets its own worktree and config overlay.
+variants:
+  baseline:
+    label: &#39;A – No changes&#39;
+    # No config_files: uses the repo&#39;s existing config as-is.
+
+  structured_claude:
+    label: &#39;B – Structured CLAUDE.md&#39;
+    config_files:
+      CLAUDE.md: ./variants/variant_b/CLAUDE.md
+
+  with_agents:
+    label: &#39;C – CLAUDE.md + AGENTS.md (sonnet)&#39;
+    model: sonnet
+    config_files:
+      CLAUDE.md: ./variants/variant_c/CLAUDE.md
+      AGENTS.md: ./variants/variant_c/AGENTS.md
+
+  minimal_readme:
+    label: &#39;D – Lean README context&#39;
+    config_files:
+      CLAUDE.md: ./variants/variant_d/CLAUDE.md
+      README.md: ./variants/variant_d/README.md
+</code></pre>
+<h4>Configuration fields</h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td>no</td>
+<td>–</td>
+<td>Unique benchmark ID generated by <code>init</code>; used to namespace branch names</td>
+</tr>
+<tr>
+<td><code>prompt</code></td>
+<td>yes</td>
+<td>–</td>
+<td>The task prompt sent to Claude in every variant</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td>no</td>
+<td><code>opusplan</code></td>
+<td>Global default Claude model (can be overridden per-variant)</td>
+</tr>
+<tr>
+<td><code>max_budget_usd</code></td>
+<td>no</td>
+<td><code>1.00</code></td>
+<td>Per-variant spend cap in USD</td>
+</tr>
+<tr>
+<td><code>repo</code></td>
+<td>no</td>
+<td><code>cwd</code></td>
+<td>Absolute path to the target git repository</td>
+</tr>
+<tr>
+<td><code>variants</code></td>
+<td>yes</td>
+<td>–</td>
+<td>Map of variant keys to variant definitions</td>
+</tr>
+</tbody></table>
+<p><code>id</code> is written automatically by <code>init</code> and used to namespace branch names (<code>agent-benchmark/&lt;id&gt;/&lt;variant-key&gt;</code>), preventing collisions when running multiple benchmarks against the same repository.</p>
+<h4>Variant definition</h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>label</code></td>
+<td>no</td>
+<td>Human-readable name shown in the report (defaults to variant key)</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td>no</td>
+<td>Claude model to use for this variant (inherits global <code>model</code> if unspecified)</td>
+</tr>
+<tr>
+<td><code>config_files</code></td>
+<td>no</td>
+<td>Map of <code>&lt;repo-relative dest&gt;: &lt;source path&gt;</code> file overlays</td>
+</tr>
+</tbody></table>
+<p><code>config_files</code> source paths are resolved relative to the directory containing <code>benchmark.yaml</code>. Destination paths are repo-relative (e.g. <code>CLAUDE.md</code>, <code>.github/copilot-instructions.md</code>). Any file can be used as an overlay -- the destination path is not limited to AI config files. For example, you could override <code>src/config.json</code> or <code>tsconfig.json</code> if that is relevant to your benchmark.</p>
+<p>A variant with no <code>config_files</code> entry uses the repo&#39;s existing files as-is.</p>
+<h3>Automatically recognized config files</h3>
+<p><code>init</code> scans for these files and copies whichever exist:</p>
+<p><strong>AI assistant config:</strong></p>
+<ul>
+<li><code>CLAUDE.md</code> and <code>AGENTS.md</code> (from any location, including subfolders)</li>
+<li><code>.claude/</code> folder and contents</li>
+<li><code>.github/copilot-instructions.md</code></li>
+</ul>
+<p><strong>Repo documentation:</strong></p>
+<ul>
+<li><code>README.md</code></li>
+<li><code>CONTRIBUTING.md</code></li>
+</ul>
+<h3>Report output</h3>
+<p>After a run, a comparison table is printed to the terminal:</p>
+<pre><code>Benchmark: &quot;Refactor auth middleware&quot; (2026-05-01T12:00:00Z)
+Base commit: abc1234
+
+Metric             | A – No changes    | B – Structured
+-------------------+-------------------+---------------
+Model              | opusplan          | sonnet
+Duration           | 45s               | 32s
+Input tokens       | 12,340            | 9,800
+Output tokens      | 3,210             | 2,100
+Cache write tokens | 4,200             | 0
+Cache read tokens  | 6,100             | 8,300
+Cost               | $0.42             | $0.31
+Normalized cost    | $0.40             | $0.35
+Tool calls         | Bash:5 Edit:3     | Bash:3 Edit:2
+Diff (+/-)         | +120/-80          | +95/-60
+</code></pre>
+<p>Input tokens include cache creation and cache read tokens. Normalized cost re-prices all input tokens at the standard (non-cached) rate, removing variance caused by cache hits and misses between variants.</p>
+<p>The report also lists the git branch created for each variant:</p>
+<pre><code>Variant branches:
+  A – No changes: agent-benchmark/baseline
+  B – Structured: agent-benchmark/structured_claude
+</code></pre>
+<p>Results are also written to <code>.agent-benchmark-results/&lt;timestamp&gt;/</code>:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>results.json</code></td>
+<td>Structured metrics for all variants</td>
+</tr>
+<tr>
+<td><code>results.md</code></td>
+<td>The table above in Markdown</td>
+</tr>
+<tr>
+<td><code>&lt;variant&gt;/events.jsonl</code></td>
+<td>Raw Claude stream-json events</td>
+</tr>
+<tr>
+<td><code>&lt;variant&gt;/diff.patch</code></td>
+<td>Full unified diff relative to base commit</td>
+</tr>
+</tbody></table>
+<h3>Config file exclusion</h3>
+<p>Config overlay files (those listed under <code>config_files</code> in a variant) are excluded from the variant&#39;s branch and diff unless Claude actually modified them. This ensures that diffs reflect only Claude&#39;s code changes, not the configuration differences between variants.</p>
+<h3>Reproducibility</h3>
+<p>The config file, base commit SHA, model, and prompt are recorded in every <code>results.json</code>. All worktrees branch from the same HEAD commit, so the only variable between runs is the config overlay.</p>
+<h3>Notes on prompt caching</h3>
+<p>The first variant to finish will pay the cache creation cost. Later variants running on the same model and account may benefit from cached system prompts. Token counts in the report reflect the actual API charges for each variant, including cache hits.</p>
+<p>The <strong>Normalized cost</strong> row removes this variance by re-pricing all cached input tokens (both cache writes and cache reads) at the standard input rate. Use this row when comparing cost efficiency between variants, since it is independent of execution order and cache state.</p>
+<h2>Reviews</h2>
+<h3>Review configuration</h3>
+<p>The <code>review</code> key in <code>benchmark.yaml</code> controls the review command:</p>
+<pre><code class="language-yaml">review:
+  # Which axes to score. Each entry can be a string (built-in description)
+  # or an object with name and optional custom description.
+  axes:
+    - focused
+    - clear
+    - conventional
+    - robust
+    - concise
+    - tested
+    # Override the description of a built-in axis:
+    - name: secure
+      description: &#39;Security best practices followed, input validation present&#39;
+    # Custom axis:
+    - name: domain-correct
+      description: &#39;The implementation is correct with respect to the business domain&#39;
+
+  # Model for review sessions (defaults to the global model).
+  model: opus
+
+  # Max budget per review session in USD (default: 0.50).
+  max_budget_usd: 0.50
+</code></pre>
+<p>If <code>review</code> is omitted, <code>agent-benchmark review</code> uses all 14 default axes, the global model, and a $0.50 budget per session.</p>
+<h4>Default scoring axes</h4>
+<table>
+<thead>
+<tr>
+<th>Axis</th>
+<th>What it measures</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>accessible</code></td>
+<td>a11y was adequately considered</td>
+</tr>
+<tr>
+<td><code>clear</code></td>
+<td>Easy to understand what was changed</td>
+</tr>
+<tr>
+<td><code>concise</code></td>
+<td>Minimal but still effective</td>
+</tr>
+<tr>
+<td><code>conventional</code></td>
+<td>Follows conventions of the repo</td>
+</tr>
+<tr>
+<td><code>documented</code></td>
+<td>Changes to public APIs or complex logic are documented where needed</td>
+</tr>
+<tr>
+<td><code>focused</code></td>
+<td>Doesn&#39;t do stuff outside of the requested changes</td>
+</tr>
+<tr>
+<td><code>idiomatic</code></td>
+<td>Follows language/framework idioms</td>
+</tr>
+<tr>
+<td><code>localized</code></td>
+<td>i18n was considered</td>
+</tr>
+<tr>
+<td><code>modular</code></td>
+<td>Clear separation of concerns</td>
+</tr>
+<tr>
+<td><code>nonbreaking</code></td>
+<td>Doesn&#39;t break existing contracts or APIs</td>
+</tr>
+<tr>
+<td><code>performant</code></td>
+<td>Performance was adequately considered</td>
+</tr>
+<tr>
+<td><code>robust</code></td>
+<td>Handles edge cases</td>
+</tr>
+<tr>
+<td><code>secure</code></td>
+<td>Security was adequately considered</td>
+</tr>
+<tr>
+<td><code>tested</code></td>
+<td>Meaningful change in test coverage, broken tests are patched</td>
+</tr>
+</tbody></table>
+<p>Duplicate axes are deduplicated (first occurrence wins). Axes not in the built-in list are treated as custom axes using their description as-is.</p>
+<h3>Review output</h3>
+<p>After a review run, two tables are printed:</p>
+<p><strong>Per-axis scores</strong> (one column per variant, <code>null</code> means not applicable):</p>
+<pre><code>Review scores for run 2026-05-01T12-00-00Z
+
+Axis         | A – No changes | B – Structured
+-------------+----------------+---------------
+focused      | 85             | 92
+clear        | 90             | 88
+conventional | 75             | 80
+robust       | 60             | 70
+...          | ...            | ...
+</code></pre>
+<p><strong>Aggregate statistics</strong> (one column per variant, <code>null</code> values excluded):</p>
+<pre><code>Aggregate scores per variant (null values excluded)
+
+Metric | A – No changes | B – Structured
+-------+----------------+---------------
+Min    | 60             | 45
+Max    | 90             | 95
+Avg    | 77.5           | 80.0
+Median | 80.0           | 82.5
+</code></pre>
+<p>Results are written to <code>.agent-benchmark-results/&lt;timestamp&gt;/</code>:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>review.json</code></td>
+<td>Structured scores for all variants</td>
+</tr>
+<tr>
+<td><code>review.md</code></td>
+<td>The tables above in Markdown</td>
+</tr>
+</tbody></table>
+<h3>Additional review workflows</h3>
+<h4>Copilot review</h4>
+<p>For Copilot-based code review, use the <code>agent-benchmark copilot-review</code> command. It automates creating PRs for each variant and requesting Copilot reviews.</p>
+<h4>Human review</h4>
+<p>After a benchmark run, inspect the diffs manually:</p>
+<pre><code class="language-bash"># View the diff for a specific variant
+git diff &lt;base-commit&gt;..&lt;agent-benchmark/variant-key&gt;
+
+# Or read the saved patch files
+cat .agent-benchmark-results/&lt;timestamp&gt;/&lt;variant&gt;/diff.patch
+</code></pre>
+<p>Score each variant on the axes that matter to you and record the scores alongside <code>review.json</code> for comparison.</p>
+<h3>Config file exclusion</h3>
+<p>Config overlay files (those listed under <code>config_files</code> in a variant) are excluded from the variant&#39;s branch and diff unless Claude actually modified them. This ensures that reviews reflect only Claude&#39;s code changes, not the configuration differences between variants.</p>
+<h2>Commands</h2>
+<h3>Init</h3>
+<p>Scaffolds a benchmark directory from a target repo.</p>
+<pre><code>agent-benchmark init &lt;repo-path&gt; [--variants &lt;n&gt;] [--name &lt;name&gt;]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Argument / Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&lt;repo-path&gt;</code></td>
+<td></td>
+<td>Local path to the target repository</td>
+</tr>
+<tr>
+<td><code>--variants &lt;n&gt;</code></td>
+<td><code>2</code></td>
+<td>Number of variants to create (minimum 2)</td>
+</tr>
+<tr>
+<td><code>--name &lt;name&gt;</code></td>
+<td><code>agent-benchmark</code></td>
+<td>Name of the benchmark directory to create</td>
+</tr>
+</tbody></table>
+<p>What it does:</p>
+<ul>
+<li>Verifies the target path is a git repository</li>
+<li>Scans for recognized config files</li>
+<li>Creates an <code>agent-benchmark/</code> directory in the current working directory</li>
+<li>Copies found config files into each variant subdirectory</li>
+<li>Generates a pre-filled <code>benchmark.yaml</code></li>
+</ul>
+<p>If <code>agent-benchmark/</code> already exists, you will be prompted to use a numbered suffix, delete the existing directory, or cancel.</p>
+<h3>Run</h3>
+<p>Runs the benchmark defined in a YAML config file.</p>
+<pre><code>agent-benchmark run &lt;benchmark.yaml&gt; [--dry-run] [--yes] [--concurrency &lt;n&gt;]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Argument / Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&lt;benchmark.yaml&gt;</code></td>
+<td></td>
+<td>Path to the benchmark config</td>
+</tr>
+<tr>
+<td><code>--dry-run</code></td>
+<td></td>
+<td>Validate config and print what would happen, without running Claude</td>
+</tr>
+<tr>
+<td><code>--yes</code></td>
+<td></td>
+<td>Skip the confirmation prompt before running</td>
+</tr>
+<tr>
+<td><code>--concurrency &lt;n&gt;</code></td>
+<td>all</td>
+<td>Max number of parallel Claude processes</td>
+</tr>
+</tbody></table>
+<p><strong>Security note:</strong> This command runs Claude with <code>--dangerously-skip-permissions</code>, giving it full filesystem and shell access with no confirmation prompts. You will be asked to confirm before any processes are spawned (bypass with <code>--yes</code>).</p>
+<p>Each variant&#39;s changes are committed to a branch named <code>agent-benchmark/&lt;variant-key&gt;</code>. Worktrees are removed automatically when the run finishes. Branch names are printed at the end of the run and recorded in <code>results.json</code>.</p>
+<h3>Results</h3>
+<p>Display benchmark result sets stored in <code>.agent-benchmark-results/</code>.</p>
+<pre><code>agent-benchmark results [&lt;timestamp&gt;] [--list]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Argument / Flag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&lt;timestamp&gt;</code></td>
+<td>Which result set to display</td>
+</tr>
+<tr>
+<td><code>--list</code></td>
+<td>List all available result sets</td>
+</tr>
+</tbody></table>
+<h3>Review</h3>
+<p>Score the code quality of each variant&#39;s changeset along configurable axes (0-100) using AI-driven review sessions. Produces per-variant scores and cross-variant aggregate statistics.</p>
+<pre><code>agent-benchmark review &lt;benchmark.yaml&gt; [&lt;timestamp&gt;] [--dry-run] [--yes] [--concurrency &lt;n&gt;]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Argument / Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&lt;benchmark.yaml&gt;</code></td>
+<td></td>
+<td>Path to the benchmark config</td>
+</tr>
+<tr>
+<td><code>&lt;timestamp&gt;</code></td>
+<td>latest</td>
+<td>Which result set to review</td>
+</tr>
+<tr>
+<td><code>--dry-run</code></td>
+<td></td>
+<td>Print what would happen without spawning Claude</td>
+</tr>
+<tr>
+<td><code>--yes</code></td>
+<td></td>
+<td>Skip confirmation prompt</td>
+</tr>
+<tr>
+<td><code>--concurrency &lt;n&gt;</code></td>
+<td>all</td>
+<td>Max parallel review sessions</td>
+</tr>
+</tbody></table>
+<p>Each review session:</p>
+<ol>
+<li>Gets the full repository checked out at the variant&#39;s branch</li>
+<li>Receives the original task prompt and is asked to score the change on each configured axis</li>
+<li>Uses <code>git log</code> and <code>git diff</code> to locate and inspect the exact changes, and reads related files for context</li>
+<li>Writes scores to <code>.review-scores.json</code> using the <code>Write</code> tool — a JSON object with a score (0-100 or <code>null</code>) and a one-sentence rationale per axis</li>
+</ol>
+<p>Results are written to <code>.agent-benchmark-results/&lt;timestamp&gt;/review.json</code> and <code>review.md</code>.</p>
+<h3>Copilot review</h3>
+<p>Create pull requests for each benchmark variant and request Copilot code reviews.</p>
+<pre><code>agent-benchmark copilot-review &lt;benchmark.yaml&gt; [&lt;timestamp&gt;] [--dry-run] [--yes] [--concurrency &lt;n&gt;]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Argument / Flag</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&lt;benchmark.yaml&gt;</code></td>
+<td></td>
+<td>Path to the benchmark config</td>
+</tr>
+<tr>
+<td><code>&lt;timestamp&gt;</code></td>
+<td>latest</td>
+<td>Which result set to create PRs for</td>
+</tr>
+<tr>
+<td><code>--dry-run</code></td>
+<td></td>
+<td>Print what would happen without creating PRs</td>
+</tr>
+<tr>
+<td><code>--yes</code></td>
+<td></td>
+<td>Skip confirmation prompt</td>
+</tr>
+<tr>
+<td><code>--concurrency &lt;n&gt;</code></td>
+<td>all</td>
+<td>Max parallel PR creation</td>
+</tr>
+</tbody></table>
+<p><strong>Security note:</strong> This command uses the <code>gh</code> CLI to create PRs and request reviews. You will be asked to confirm before any operations are performed (bypass with <code>--yes</code>).</p>
+<p>For each variant:</p>
+<ol>
+<li>Checks out or creates a worktree at the variant&#39;s branch</li>
+<li>Pushes the branch to the remote</li>
+<li>Creates a PR with the benchmark task prompt and variant metadata</li>
+<li>Requests Copilot review via <code>gh pr review --copilot</code></li>
+<li>Collects the PR URL for the final report</li>
+</ol>
+<p>Worktrees are removed automatically when the command finishes. Results are printed to a summary table showing PR URLs.</p>
+<h2>License</h2>
+<p><a href="./LICENSE">Licensed under MIT.</a> Do what you will.</p>
+
+        </main>
+      </div>
+    </div>
+    <footer class="site-footer">
+      Made by&nbsp;
+      <a href="https://www.linkedin.com/in/bence-a-toth/" target="_blank" rel="noopener noreferrer"
+        >Bence A. Tóth</a
+      >
+    </footer>
+
+    <script>
+      ;(function () {
+        const content = document.getElementById('main-content')
+        const toc = document.getElementById('toc')
+
+        const h1 = content.querySelector('h1')
+        if (h1) h1.remove()
+
+        // Build table of contents from h2, h3 headings
+        const headings = content.querySelectorAll('h2, h3')
+
+        headings.forEach(function (h, i) {
+          if (!h.id) {
+            h.id =
+              'heading-' +
+              i +
+              '-' +
+              h.textContent
+                .toLowerCase()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+          }
+          const anchor = document.createElement('a')
+          anchor.href = '#' + h.id
+          anchor.className = 'heading-anchor'
+          anchor.setAttribute('aria-hidden', 'true')
+          anchor.textContent = '#'
+          h.appendChild(anchor)
+
+          const li = document.createElement('li')
+          const a = document.createElement('a')
+          a.href = '#' + h.id
+          a.textContent = h.textContent.replace(/#$/, '').trimEnd()
+          a.className = 'toc-' + h.tagName.toLowerCase()
+          li.appendChild(a)
+          toc.appendChild(li)
+        })
+
+        // Highlight active section while scrolling
+        const observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              const link = toc.querySelector('a[href="#' + entry.target.id + '"]')
+              if (!link) return
+              if (entry.isIntersecting) {
+                toc.querySelectorAll('a').forEach(function (a) {
+                  a.style.fontWeight = ''
+                  a.style.color = ''
+                })
+                link.style.fontWeight = '600'
+                link.style.color = 'var(--accent)'
+              }
+            })
+          },
+          { rootMargin: '0px 0px -80% 0px' },
+        )
+
+        headings.forEach(function (h) {
+          observer.observe(h)
+        })
+      })()
+    </script>
+  </body>
+</html>
