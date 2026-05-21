@@ -36,17 +36,21 @@ npx agent-benchmark <command>
 # 1. Scaffold a benchmark from your project
 npx agent-benchmark init /path/to/your-project
 
-# 2. Edit the variant files
-#    variants/baseline/  – leave as-is (or delete config_files entry to use repo directly)
-#    variants/variant_b/ – your experimental config
+# 2. Edit the variant files to test your hypothesis
+#    variants/baseline/  – leave as-is to use the repo's existing config
+#    variants/variant_b/ – add or modify CLAUDE.md, AGENTS.md, README.md, etc.
 
-# 3. Fill in the prompt in agent-benchmark/benchmark.yaml
+# 3. Configure the benchmark in agent-benchmark/benchmark.yaml
+#    Set the task prompt, model, per-variant budget, and any other settings
 
-# 4. Run it
+# 4. Run the benchmark — each variant runs in parallel in its own worktree
 npx agent-benchmark run agent-benchmark/benchmark.yaml
 
-# 5. Score code quality of each variant
+# 5. Score the code quality of each variant's changeset
 npx agent-benchmark review agent-benchmark/benchmark.yaml
+
+# 6. Create pull requests and request Copilot reviews for each variant
+npx agent-benchmark copilot-review agent-benchmark/benchmark.yaml
 ```
 
 ## Benchmarks
