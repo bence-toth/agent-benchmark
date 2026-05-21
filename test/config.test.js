@@ -26,6 +26,7 @@ describe('loadConfig', () => {
     const p = await writeConfig(
       'valid.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 model: sonnet
 max_budget_usd: 0.5
@@ -50,6 +51,7 @@ variants:
     const p = await writeConfig(
       'defaults.yaml',
       `
+id: test1234
 prompt: "Do something"
 variants:
   a:
@@ -67,6 +69,7 @@ variants:
     const p = await writeConfig(
       'placeholder.yaml',
       `
+id: test1234
 prompt: "TODO: describe the task"
 variants:
   a:
@@ -82,6 +85,7 @@ variants:
     const p = await writeConfig(
       'onevariants.yaml',
       `
+id: test1234
 prompt: "Do something"
 variants:
   a:
@@ -97,6 +101,7 @@ variants:
     const p = await writeConfig(
       'bench/rel.yaml',
       `
+id: test1234
 prompt: "Fix it"
 variants:
   baseline:
@@ -116,6 +121,7 @@ variants:
     const p = await writeConfig(
       'variant-models.yaml',
       `
+id: test1234
 prompt: "Test task"
 model: opusplan
 variants:
@@ -153,6 +159,7 @@ variants:
     const p = await writeConfig(
       'no-prompt.yaml',
       `
+id: test1234
 variants:
   a:
     label: A
@@ -167,6 +174,7 @@ variants:
     const p = await writeConfig(
       'bad-variants.yaml',
       `
+id: test1234
 prompt: "Do something"
 variants: "not a mapping"
 `,
@@ -178,6 +186,7 @@ variants: "not a mapping"
     const p = await writeConfig(
       'bad-variant-entry.yaml',
       `
+id: test1234
 prompt: "Do something"
 variants:
   a: "not a mapping"
@@ -192,6 +201,7 @@ variants:
     const p = await writeConfig(
       'bad-config-files.yaml',
       `
+id: test1234
 prompt: "Do something"
 variants:
   a:
@@ -210,6 +220,7 @@ describe('loadConfig review section', () => {
     const p = await writeConfig(
       'no-review.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 variants:
   a:
@@ -228,6 +239,7 @@ variants:
     const p = await writeConfig(
       'review-no-model.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 model: sonnet
 variants:
@@ -249,6 +261,7 @@ review:
     const p = await writeConfig(
       'review-full.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 variants:
   a:
@@ -275,6 +288,7 @@ review:
     const p = await writeConfig(
       'review-builtin-desc.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 variants:
   a:
@@ -295,6 +309,7 @@ review:
     const p = await writeConfig(
       'review-custom-desc.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 variants:
   a:
@@ -316,6 +331,7 @@ review:
     const p = await writeConfig(
       'review-custom-axis.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 variants:
   a:
@@ -337,6 +353,7 @@ review:
     const p = await writeConfig(
       'review-dedupe.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 variants:
   a:
@@ -360,6 +377,7 @@ review:
     const p = await writeConfig(
       'review-empty-axes.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 variants:
   a:
@@ -377,6 +395,7 @@ review:
     const p = await writeConfig(
       'review-no-axes-key.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 variants:
   a:
@@ -398,6 +417,7 @@ review:
     const p = await writeConfig(
       'review-not-mapping.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 variants:
   a:
@@ -414,6 +434,7 @@ review: "not a mapping"
     const p = await writeConfig(
       'review-axes-not-list.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 variants:
   a:
@@ -431,6 +452,7 @@ review:
     const p = await writeConfig(
       'review-axes-bad-entry.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 variants:
   a:
@@ -449,6 +471,7 @@ review:
     const p = await writeConfig(
       'review-no-name.yaml',
       `
+id: test1234
 prompt: "Fix the bug"
 variants:
   a:
