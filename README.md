@@ -155,6 +155,14 @@ Diff (+/-)         | +120/-80          | +95/-60
 
 Input tokens include cache creation and cache read tokens. Normalized cost re-prices all input tokens at the standard (non-cached) rate, removing variance caused by cache hits and misses between variants.
 
+The report also lists the git branch created for each variant:
+
+```
+Variant branches:
+  A – No changes: agent-benchmark/baseline
+  B – Structured: agent-benchmark/structured_claude
+```
+
 Results are also written to `.agent-benchmark-results/<timestamp>/`:
 
 | File                     | Contents                                  |
@@ -325,7 +333,7 @@ If `agent-benchmark/` already exists, you will be prompted to use a numbered suf
 Runs the benchmark defined in a YAML config file.
 
 ```
-agent-benchmark run <benchmark.yaml> [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
+agent-benchmark run <benchmark.yaml> [--dry-run] [--yes] [--concurrency <n>]
 ```
 
 | Argument / Flag     | Default | Description                                                         |
@@ -334,9 +342,10 @@ agent-benchmark run <benchmark.yaml> [--dry-run] [--yes] [--concurrency <n>] [--
 | `--dry-run`         |         | Validate config and print what would happen, without running Claude |
 | `--yes`             |         | Skip the confirmation prompt before running                         |
 | `--concurrency <n>` | all     | Max number of parallel Claude processes                             |
-| `--no-cleanup`      |         | Skip the prompt to remove worktrees after the run                   |
 
 **Security note:** This command runs Claude with `--dangerously-skip-permissions`, giving it full filesystem and shell access with no confirmation prompts. You will be asked to confirm before any processes are spawned (bypass with `--yes`).
+
+Each variant's changes are committed to a branch named `agent-benchmark/<variant-key>`. Worktrees are removed automatically when the run finishes. Branch names are printed at the end of the run and recorded in `results.json`.
 
 ### Results
 
@@ -381,17 +390,16 @@ Results are written to `.agent-benchmark-results/<timestamp>/review.json` and `r
 Create pull requests for each benchmark variant and request Copilot code reviews.
 
 ```
-agent-benchmark copilot-review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>] [--no-cleanup]
+agent-benchmark copilot-review <benchmark.yaml> [<timestamp>] [--dry-run] [--yes] [--concurrency <n>]
 ```
 
-| Argument / Flag     | Default | Description                                                       |
-| ------------------- | ------- | ----------------------------------------------------------------- |
-| `<benchmark.yaml>`  |         | Path to the benchmark config                                      |
-| `<timestamp>`       | latest  | Which result set to create PRs for                                |
-| `--dry-run`         |         | Print what would happen without creating PRs                      |
-| `--yes`             |         | Skip confirmation prompt                                          |
-| `--concurrency <n>` | all     | Max parallel PR creation                                          |
-| `--no-cleanup`      |         | Leave worktrees after creating PRs (useful for manual inspection) |
+| Argument / Flag     | Default | Description                                  |
+| ------------------- | ------- | -------------------------------------------- |
+| `<benchmark.yaml>`  |         | Path to the benchmark config                 |
+| `<timestamp>`       | latest  | Which result set to create PRs for           |
+| `--dry-run`         |         | Print what would happen without creating PRs |
+| `--yes`             |         | Skip confirmation prompt                     |
+| `--concurrency <n>` | all     | Max parallel PR creation                     |
 
 **Security note:** This command uses the `gh` CLI to create PRs and request reviews. You will be asked to confirm before any operations are performed (bypass with `--yes`).
 
@@ -403,57 +411,7 @@ For each variant:
 4. Requests Copilot review via `gh pr review --copilot`
 5. Collects the PR URL for the final report
 
-Results are printed to a summary table showing PR URLs.
-
-### Cleanup commands
-
-Each `run`, `review`, and `copilot-review` command creates git worktrees and branches that are normally removed at the end of the session. If you passed `--no-cleanup` to keep them for manual inspection, you can use the following commands to remove them when you're done.
-
-#### Run cleanup
-
-Remove worktrees and branches created by a prior `run --no-cleanup`.
-
-```
-agent-benchmark run-cleanup <benchmark.yaml> [--yes]
-```
-
-| Argument / Flag    | Description                  |
-| ------------------ | ---------------------------- |
-| `<benchmark.yaml>` | Path to the benchmark config |
-| `--yes`            | Skip the confirmation prompt |
-
-This is useful if you ran with `--no-cleanup` to inspect results, then want to clean up manually later.
-
-#### Review cleanup
-
-Remove review worktrees created by a prior `review --no-cleanup`.
-
-```
-agent-benchmark review-cleanup <benchmark.yaml> [<timestamp>] [--yes]
-```
-
-| Argument / Flag    | Default | Description                              |
-| ------------------ | ------- | ---------------------------------------- |
-| `<benchmark.yaml>` |         | Path to the benchmark config             |
-| `<timestamp>`      | latest  | Which result set's worktrees to clean up |
-| `--yes`            |         | Skip confirmation prompt                 |
-
-This is useful if you used a prior review with `--no-cleanup` to inspect the variant branches manually, then want to remove the worktrees without re-running the review.
-
-#### Copilot review cleanup
-
-Remove Copilot review worktrees created by a prior `copilot-review --no-cleanup`.
-
-```
-agent-benchmark copilot-review-cleanup <benchmark.yaml> [--yes]
-```
-
-| Argument / Flag    | Description                  |
-| ------------------ | ---------------------------- |
-| `<benchmark.yaml>` | Path to the benchmark config |
-| `--yes`            | Skip confirmation prompt     |
-
-This is useful if you used a prior copilot-review with `--no-cleanup` to inspect the variant branches or PRs manually, then want to remove the worktrees without re-running the review.
+Worktrees are removed automatically when the command finishes. Results are printed to a summary table showing PR URLs.
 
 ## License
 

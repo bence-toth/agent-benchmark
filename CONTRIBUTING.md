@@ -84,14 +84,11 @@ lib/
   runner.js             – Claude process spawning and orchestration
   worktree.js           – git worktree lifecycle and diff stats
   commands/
-    copilot-review.js         – thin dispatcher for copilot-review subcommand
-    copilot-review-cleanup.js – thin dispatcher for copilot-review-cleanup subcommand
-    init.js                   – thin dispatcher for init subcommand
-    results.js                – thin dispatcher for results subcommand
-    review.js                 – thin dispatcher for review subcommand
-    review-cleanup.js         – thin dispatcher for review-cleanup subcommand
-    run.js                    – thin dispatcher for run subcommand
-    run-cleanup.js            – thin dispatcher for run-cleanup subcommand
+    copilot-review.js   – thin dispatcher for copilot-review subcommand
+    init.js             – thin dispatcher for init subcommand
+    results.js          – thin dispatcher for results subcommand
+    review.js           – thin dispatcher for review subcommand
+    run.js              – thin dispatcher for run subcommand
 test/                   – unit, integration, and end-to-end tests
 ```
 

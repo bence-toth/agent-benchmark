@@ -24,14 +24,11 @@ lib/
   runner.js             – Claude process orchestration (runBenchmark)
   worktree.js           – git worktree lifecycle (worktreePath, branchName, createWorktree, applyConfigOverlay, commitChanges, discardChanges, removeWorktree, pushBranch, getBaseCommit, getDiffStats)
   commands/
-    copilot-review.js         – copilot-review subcommand
-    copilot-review-cleanup.js – copilot-review-cleanup subcommand
-    init.js                   – init subcommand
-    results.js                – results subcommand
-    review.js                 – review subcommand
-    review-cleanup.js         – review-cleanup subcommand
-    run.js                    – run subcommand
-    run-cleanup.js            – run-cleanup subcommand
+    copilot-review.js   – copilot-review subcommand
+    init.js             – init subcommand
+    results.js          – results subcommand
+    review.js           – review subcommand
+    run.js              – run subcommand
 ```
 
 ## Key constraints
