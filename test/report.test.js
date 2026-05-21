@@ -140,6 +140,34 @@ describe('generateReport', () => {
     console.log = orig
     assert.ok(lines.join('\n').includes('FAILED'))
   })
+
+  it('falls back to variant key when label is absent in branch listing', () => {
+    const reportWithBranch = {
+      ...sampleReport,
+      variants: {
+        baseline: {
+          ...sampleReport.variants.baseline,
+          branch: 'agent-benchmark/abc/baseline',
+        },
+        variant_b: {
+          label: 'B – Variant',
+          branch: 'agent-benchmark/abc/variant_b',
+          error: null,
+          metrics: sampleReport.variants.baseline.metrics,
+          diffStats: sampleReport.variants.baseline.diffStats,
+          events: [],
+        },
+      },
+    }
+    const lines = []
+    const orig = console.log
+    console.log = (...a) => lines.push(a.join(' '))
+    reportModule.generateReport(reportWithBranch)
+    console.log = orig
+    const output = lines.join('\n')
+    assert.ok(output.includes('agent-benchmark/abc/baseline'))
+    assert.ok(output.includes('agent-benchmark/abc/variant_b'))
+  })
 })
 
 describe('resolveTimestamp', () => {
