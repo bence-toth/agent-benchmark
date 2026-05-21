@@ -89,8 +89,22 @@ lib/
     results.js          – thin dispatcher for results subcommand
     review.js           – thin dispatcher for review subcommand
     run.js              – thin dispatcher for run subcommand
+docs/
+  build.mjs             – converts README.md → docs/dist/index.html (via marked)
+  template.html         – HTML/CSS template for the documentation site
 test/                   – unit, integration, and end-to-end tests
 ```
+
+## Documentation site
+
+The docs site is a single HTML page generated from `README.md`.
+
+```bash
+npm run docs:build    # build docs/dist/index.html
+npm run docs:preview  # build and serve locally (via npx serve)
+```
+
+`docs/dist/` is gitignored. The site is published automatically to GitHub Pages on every push to `main` via `.github/workflows/pages.yml`.
 
 ## Commit style
 
