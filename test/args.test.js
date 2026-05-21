@@ -43,10 +43,9 @@ describe('parseRunArgs', () => {
   })
 
   it('parses flags', () => {
-    const opts = parseRunArgs(['bench.yaml', '--dry-run', '--yes', '--no-cleanup'])
+    const opts = parseRunArgs(['bench.yaml', '--dry-run', '--yes'])
     assert.equal(opts.dryRun, true)
     assert.equal(opts.yes, true)
-    assert.equal(opts.noCleanup, true)
   })
 
   it('parses --concurrency', () => {
@@ -103,7 +102,6 @@ describe('parseCopilotReviewArgs', () => {
     assert.equal(opts.dryRun, false)
     assert.equal(opts.yes, false)
     assert.equal(opts.concurrency, null)
-    assert.equal(opts.noCleanup, false)
   })
 
   it('parses config file and timestamp', () => {
@@ -112,18 +110,10 @@ describe('parseCopilotReviewArgs', () => {
     assert.equal(opts.timestamp, '2026-05-01T12-00-00Z')
   })
 
-  it('parses --dry-run, --yes, --no-cleanup, --concurrency', () => {
-    const opts = parseCopilotReviewArgs([
-      'bench.yaml',
-      '--dry-run',
-      '--yes',
-      '--no-cleanup',
-      '--concurrency',
-      '2',
-    ])
+  it('parses --dry-run, --yes, --concurrency', () => {
+    const opts = parseCopilotReviewArgs(['bench.yaml', '--dry-run', '--yes', '--concurrency', '2'])
     assert.equal(opts.dryRun, true)
     assert.equal(opts.yes, true)
-    assert.equal(opts.noCleanup, true)
     assert.equal(opts.concurrency, 2)
   })
 
