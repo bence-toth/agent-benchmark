@@ -155,6 +155,21 @@ variants:
     await assert.rejects(() => loadConfig(p), /Config must be a YAML mapping/)
   })
 
+  it('throws when id is missing', async () => {
+    const p = await writeConfig(
+      'no-id.yaml',
+      `
+prompt: "Fix the bug"
+variants:
+  a:
+    label: A
+  b:
+    label: B
+`,
+    )
+    await assert.rejects(() => loadConfig(p), /id/)
+  })
+
   it('throws when prompt is missing', async () => {
     const p = await writeConfig(
       'no-prompt.yaml',
