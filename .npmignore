@@ -4,5 +4,4 @@ test/
 .prettierrc.json
 *.test.js
 node_modules/
-PLAN.md
 CONTRIBUTING.md
