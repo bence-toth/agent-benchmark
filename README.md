@@ -434,4 +434,4 @@ Worktrees are removed automatically when the command finishes. Results are print
 
 ## License
 
-[Licensed under MIT.](./LICENSE) Do what you will.
+[Licensed under MIT.](https://github.com/bence-toth/agent-benchmark/blob/main/LICENSE) Do what you will.
