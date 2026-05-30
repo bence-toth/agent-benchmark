@@ -1,6 +1,6 @@
 {
   "name": "agent-benchmark",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Run the same Claude Code task across multiple config variants and compare results",
   "type": "module",
   "bin": {
@@ -18,7 +18,6 @@
     "lint": "eslint lib/ bin/ test/",
     "pack": "npm pack --dry-run",
     "prepublishOnly": "npm run build",
-    "publish": "npm publish",
     "test": "node --test test/*.test.js",
     "test:coverage": "mkdir -p coverage && node --test --experimental-test-isolation=none --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test-reporter=spec --test-reporter-destination=stdout test/*.test.js"
   },
