@@ -1,6 +1,6 @@
 {
   "name": "agent-benchmark",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Run the same Claude Code task across multiple config variants and compare results",
   "type": "module",
   "bin": {
