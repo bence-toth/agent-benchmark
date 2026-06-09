@@ -42,5 +42,13 @@
     "eslint": "^9.0.0",
     "marked": "^15.0.0",
     "prettier": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bence-toth/agent-benchmark.git"
+  },
+  "homepage": "https://github.com/bence-toth/agent-benchmark",
+  "bugs": {
+    "url": "https://github.com/bence-toth/agent-benchmark/issues"
   }
 }
